@@ -1,8 +1,0 @@
-﻿node_modules
-client/dist
-server/data
-server/.env
-server/server-run.log
-client/android/.gradle
-client/android/app/build
-.DS_Store
