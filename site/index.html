@@ -86,9 +86,11 @@
         <div class="nav-item active" data-page="dashboard"><i class="fa fa-dashboard w-6 text-xl"></i><span>数据仪表盘</span></div>
         <div class="nav-item" data-page="training"><i class="fa fa-calendar-check-o w-6 text-xl"></i><span>今日训练</span></div>
         <div class="nav-item" data-page="plan"><i class="fa fa-list-alt w-6 text-xl"></i><span>周训练计划</span></div>
+        <div class="nav-item" data-page="templates"><i class="fa fa-clone w-6 text-xl"></i><span>训练模板</span></div>
+        <div class="nav-item" data-page="analytics"><i class="fa fa-bar-chart w-6 text-xl"></i><span>训练分析</span></div>
         <div class="nav-item" data-page="history"><i class="fa fa-history w-6 text-xl"></i><span>历史记录</span></div>
         <div class="nav-item" data-page="ai-chat"><i class="fa fa-robot w-6 text-xl"></i><span>AI 对话</span></div>
-        <div class="nav-item" data-page="exercises"><i class="fa fa-video-camera w-6 text-xl"></i><span>动作教程</span></div>
+        <div class="nav-item" data-page="exercises"><i class="fa fa-video-camera w-6 text-xl"></i><span>我的动作库</span></div>
         <div class="nav-item" data-page="profile"><i class="fa fa-sliders w-6 text-xl"></i><span>AI 档案</span></div>
       </div>
     </nav>
@@ -101,12 +103,13 @@
   </aside>
 
   <nav class="mobile-nav">
-    <div class="grid grid-cols-5 gap-1 p-2 text-xs">
+    <div class="grid grid-cols-6 gap-1 p-2 text-xs">
       <button class="mobile-nav-btn py-2 text-primary" data-page="dashboard"><i class="fa fa-dashboard block text-lg"></i>首页</button>
       <button class="mobile-nav-btn py-2 text-slate-500" data-page="training"><i class="fa fa-play-circle block text-lg"></i>训练</button>
       <button class="mobile-nav-btn py-2 text-slate-500" data-page="plan"><i class="fa fa-calendar block text-lg"></i>计划</button>
+      <button class="mobile-nav-btn py-2 text-slate-500" data-page="templates"><i class="fa fa-clone block text-lg"></i>模板</button>
+      <button class="mobile-nav-btn py-2 text-slate-500" data-page="analytics"><i class="fa fa-bar-chart block text-lg"></i>分析</button>
       <button class="mobile-nav-btn py-2 text-slate-500" data-page="ai-chat"><i class="fa fa-robot block text-lg"></i>AI</button>
-      <button class="mobile-nav-btn py-2 text-slate-500" data-page="profile"><i class="fa fa-sliders block text-lg"></i>设置</button>
     </div>
   </nav>
 
@@ -291,6 +294,46 @@
         </div>
       </section>
 
+      <section id="templates" class="page-section space-y-6">
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 class="text-xl font-bold">训练模板</h3>
+              <p class="text-slate-500 mt-2">把你喜欢的一天保存为模板，后面可以一键应用到任意日期，也可以让 AI 生成新的模板。</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="save-day-template-btn" class="btn-secondary">保存今天为模板</button>
+              <button id="generate-template-ai-btn" class="btn-primary">AI 生成新模板</button>
+            </div>
+          </div>
+          <div id="template-library" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-6"></div>
+        </div>
+      </section>
+
+      <section id="analytics" class="page-section space-y-6">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="xl:col-span-2 bg-white rounded-3xl p-6 card-shadow">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-xl font-bold">容量分布</h3>
+                <p class="text-slate-500 mt-2">按动作部位统计训练总量，方便看你的训练是否失衡。</p>
+              </div>
+            </div>
+            <div id="muscle-volume-list" class="space-y-3 mt-6"></div>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow">
+            <h3 class="text-xl font-bold">PR 墙</h3>
+            <p class="text-slate-500 mt-2">这里会汇总每个动作的最佳重量表现。</p>
+            <div id="pr-wall" class="space-y-3 mt-6"></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <h3 class="text-xl font-bold">训练频率建议</h3>
+          <p class="text-slate-500 mt-2">AI 和历史数据一起判断，你哪些部位练得还不够，哪些部位需要恢复。</p>
+          <div id="analytics-insights" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6"></div>
+        </div>
+      </section>
+
       <section id="history" class="page-section space-y-6">
         <div class="bg-white rounded-3xl p-6 card-shadow">
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -310,6 +353,7 @@
             <button class="quick-chip quick-question-btn" data-question="帮我重排本周训练计划">重排本周计划</button>
             <button class="quick-chip quick-question-btn" data-question="替换今天训练中的动作，保持同样训练目标">替换今天动作</button>
             <button class="quick-chip quick-question-btn" data-question="根据我的历史数据，给我下一次训练的重量和次数建议">下次重量建议</button>
+            <button class="quick-chip quick-question-btn" data-question="帮我新增一个适合我器材的新动作，并加入我的动作库和今天计划">AI 新增动作</button>
             <button class="quick-chip quick-question-btn" data-question="推荐新的自定义动作并加入我的计划">推荐新动作</button>
           </div>
           <div id="chat-messages" class="bg-slate-50 rounded-3xl p-4 min-h-[380px] max-h-[560px] overflow-y-auto">
@@ -408,9 +452,16 @@
       <form id="record-form" class="grid md:grid-cols-2 gap-4 mt-6">
         <label><span class="text-sm text-slate-500">动作</span><input id="record-exercise-name" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
         <label><span class="text-sm text-slate-500">日期</span><input id="record-date" type="date" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
-        <label><span class="text-sm text-slate-500">重量 (kg)</span><input id="record-weight" type="number" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
-        <label><span class="text-sm text-slate-500">组数</span><input id="record-sets" type="number" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
-        <label class="md:col-span-2"><span class="text-sm text-slate-500">次数</span><input id="record-reps" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+        <div class="md:col-span-2">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <span class="text-sm text-slate-500">逐组记录</span>
+              <p class="text-xs text-slate-400 mt-1">每一组的重量、次数和主观余力都可以单独记录。</p>
+            </div>
+            <button type="button" id="add-set-row-btn" class="btn-secondary">增加一组</button>
+          </div>
+          <div id="set-rows" class="space-y-3 mt-4"></div>
+        </div>
         <label class="md:col-span-2"><span class="text-sm text-slate-500">备注</span><textarea id="record-notes" rows="4" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3"></textarea></label>
         <div class="md:col-span-2 flex gap-3">
           <button type="submit" class="btn-primary">保存记录</button>
@@ -502,6 +553,7 @@
         plan: saved.plan || structuredClone(DEFAULT_PLAN),
         records: saved.records || [],
         exercises: saved.exercises || DEFAULT_EXERCISES,
+        templates: saved.templates || [],
         completed: saved.completed || {},
         sessionNotes: saved.sessionNotes || {},
         restTimer: saved.restTimer || { preset: 90, remaining: 90, running: false },
@@ -528,6 +580,7 @@
         plan: AppState.plan,
         records: AppState.records,
         exercises: AppState.exercises,
+        templates: AppState.templates,
         completed: AppState.completed,
         sessionNotes: AppState.sessionNotes,
         restTimer: AppState.restTimer,
@@ -605,6 +658,34 @@
       });
     }
 
+    function createSetRow(values = {}) {
+      return {
+        weight: values.weight ?? "",
+        reps: values.reps ?? "",
+        rir: values.rir ?? ""
+      };
+    }
+
+    function normalizeSetRows(rows, fallback = {}) {
+      const list = Array.isArray(rows) && rows.length ? rows : Array.from({ length: Number(fallback.defaultSets || 3) }, () => createSetRow({ reps: fallback.defaultReps || "10-12" }));
+      return list.map((row) => createSetRow(row));
+    }
+
+    function normalizeExerciseItem(item) {
+      return {
+        name: item.name,
+        muscleGroup: item.muscleGroup || "自定义",
+        targetMuscles: Array.isArray(item.targetMuscles) && item.targetMuscles.length ? item.targetMuscles : [item.muscleGroup || "自定义"],
+        equipment: item.equipment || "自定义器材 / 动作",
+        recommendedWeight: item.recommendedWeight || "自重",
+        defaultSets: Number(item.defaultSets || 3),
+        defaultReps: item.defaultReps || "10-12",
+        bvid: item.bvid || "",
+        description: Array.isArray(item.description) && item.description.length ? item.description : ["AI 新增动作，建议先从标准轨迹和轻重量开始。"],
+        tips: Array.isArray(item.tips) && item.tips.length ? item.tips : ["先保证动作标准，再逐步增加重量和次数。"]
+      };
+    }
+
     function getStats() {
       const dates = [...new Set(AppState.records.map((item) => item.date))];
       const maxWeight = AppState.records.reduce((max, item) => Math.max(max, Number(item.weight) || 0), 0);
@@ -641,9 +722,11 @@
         dashboard: "数据仪表盘",
         training: "今日训练",
         plan: "周训练计划",
+        templates: "训练模板",
+        analytics: "训练分析",
         history: "历史记录",
         "ai-chat": "AI 对话",
-        exercises: "动作教程",
+        exercises: "我的动作库",
         profile: "AI 档案"
       };
       document.getElementById("page-title").textContent = titles[pageName] || "AI 智能健身教练";
@@ -653,6 +736,8 @@
     function renderPageSpecific(pageName) {
       if (pageName === "training") renderTrainingPage();
       if (pageName === "plan") renderPlanPage();
+      if (pageName === "templates") renderTemplates();
+      if (pageName === "analytics") renderAnalytics();
       if (pageName === "history") renderHistory();
       if (pageName === "exercises") renderExercises();
       if (pageName === "profile") renderProfile();
@@ -838,6 +923,7 @@
           <div>
             <p class="font-semibold">${escapeHtml(item.exerciseName)}</p>
             <p class="text-sm text-slate-500 mt-1">${escapeHtml(item.date)} · ${DAYS[item.dayOfWeek]}</p>
+            ${Array.isArray(item.setDetails) && item.setDetails.length ? `<p class="text-sm text-slate-400 mt-2">${item.setDetails.map((set, index) => `第${index + 1}组 ${escapeHtml(set.weight)}kg × ${escapeHtml(set.reps)}${set.rir ? ` · RIR ${escapeHtml(set.rir)}` : ""}`).join(" ｜ ")}</p>` : ""}
           </div>
           <div class="text-sm text-slate-600">${escapeHtml(item.weight)}kg · ${escapeHtml(item.sets)} 组 · ${escapeHtml(item.reps)}</div>
         </div>
@@ -871,6 +957,82 @@
             <button class="btn-secondary" onclick="openExerciseModal('${escapeHtml(item.name)}')">看视频</button>
             <button class="btn-primary" onclick="openRecordModal('${escapeHtml(item.name)}')">记录</button>
           </div>
+        </div>
+      `).join("");
+    }
+
+    function renderTemplates() {
+      const list = AppState.templates || [];
+      document.getElementById("template-library").innerHTML = list.length ? list.map((item, index) => `
+        <div class="bg-white rounded-3xl p-5 border border-slate-100 card-hover">
+          <p class="text-sm text-slate-500">${escapeHtml(item.focus || "训练模板")}</p>
+          <h4 class="text-lg font-bold mt-2">${escapeHtml(item.title)}</h4>
+          <p class="text-sm text-slate-500 mt-2">${escapeHtml(item.duration || "45 分钟")} · ${escapeHtml((item.exercises || []).length)} 个动作</p>
+          <div class="space-y-2 mt-4">
+            ${(item.exercises || []).slice(0, 4).map((name) => `<div class="rounded-2xl bg-slate-50 px-3 py-2 text-sm">${escapeHtml(name)}</div>`).join("")}
+          </div>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <button class="btn-primary" onclick="applyTemplate(${index}, ${todayIndex()})">应用到今天</button>
+            <button class="btn-secondary" onclick="switchPage('plan'); renderPlanPage(${todayIndex()});">去计划页</button>
+            <button class="btn-ghost" onclick="deleteTemplate(${index})">删除</button>
+          </div>
+        </div>
+      `).join("") : `<div class="rounded-3xl border border-dashed border-slate-200 p-8 text-center text-slate-500 md:col-span-2 xl:col-span-3">还没有训练模板。你可以先把今天计划保存成模板，或者让 AI 生成新的模板。</div>`;
+    }
+
+    function renderAnalytics() {
+      const volumeMap = {};
+      const prMap = {};
+      AppState.records.forEach((item) => {
+        const exercise = getExercise(item.exerciseName);
+        const group = exercise?.muscleGroup || "其他";
+        const repsNumber = Array.isArray(item.setDetails) && item.setDetails.length
+          ? item.setDetails.reduce((sum, set) => sum + (Number(set.reps) || 0), 0)
+          : (parseInt(item.reps, 10) || 0) * (Number(item.sets) || 1);
+        const weightNumber = Array.isArray(item.setDetails) && item.setDetails.length
+          ? item.setDetails.reduce((sum, set) => sum + ((Number(set.weight) || 0) * (Number(set.reps) || 0)), 0)
+          : (Number(item.weight) || 0) * repsNumber;
+        volumeMap[group] = (volumeMap[group] || 0) + weightNumber;
+        const currentPR = prMap[item.exerciseName];
+        if (!currentPR || Number(item.weight) > Number(currentPR.weight)) prMap[item.exerciseName] = item;
+      });
+
+      const sortedVolume = Object.entries(volumeMap).sort((a, b) => b[1] - a[1]);
+      document.getElementById("muscle-volume-list").innerHTML = sortedVolume.length ? sortedVolume.map(([group, total]) => {
+        const max = sortedVolume[0][1] || 1;
+        const percent = Math.max(12, Math.round((total / max) * 100));
+        return `
+          <div class="rounded-2xl border border-slate-100 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <p class="font-semibold">${escapeHtml(group)}</p>
+              <p class="text-sm text-slate-500">${Math.round(total)} 容量</p>
+            </div>
+            <div class="progress-track mt-3">
+              <div class="progress-bar" style="width:${percent}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("") : `<div class="rounded-2xl bg-slate-50 p-4 text-slate-500">完成几次训练记录后，这里会自动生成分析。</div>`;
+
+      const prs = Object.values(prMap).sort((a, b) => Number(b.weight) - Number(a.weight)).slice(0, 8);
+      document.getElementById("pr-wall").innerHTML = prs.length ? prs.map((item) => `
+        <div class="rounded-2xl border border-slate-100 p-4">
+          <p class="font-semibold">${escapeHtml(item.exerciseName)}</p>
+          <p class="text-primary font-bold text-lg mt-2">${escapeHtml(item.weight)} kg</p>
+          <p class="text-sm text-slate-500 mt-1">${escapeHtml(item.date)}</p>
+        </div>
+      `).join("") : `<div class="rounded-2xl bg-slate-50 p-4 text-slate-500">还没有 PR 数据。</div>`;
+
+      const lowGroup = sortedVolume[sortedVolume.length - 1]?.[0] || "胸部";
+      const highGroup = sortedVolume[0]?.[0] || "背部";
+      document.getElementById("analytics-insights").innerHTML = [
+        ["训练偏少", `${lowGroup} 的训练容量目前最低，后面可以优先补一些针对动作。`, "warning"],
+        ["训练最多", `${highGroup} 当前是你投入最多的部位，注意安排恢复和替补动作。`, "primary"],
+        ["产品建议", "建议每次训练后都写一句主观备注，AI 才能更稳定地推进计划。", "success"]
+      ].map(([title, body]) => `
+        <div class="rounded-2xl border border-slate-100 p-4">
+          <p class="font-semibold">${escapeHtml(title)}</p>
+          <p class="text-slate-600 leading-7 mt-2">${escapeHtml(body)}</p>
         </div>
       `).join("");
     }
@@ -917,11 +1079,50 @@
       const exercise = getExercise(name);
       document.getElementById("record-exercise-name").value = name;
       document.getElementById("record-date").value = localDateValue();
-      document.getElementById("record-weight").value = exercise?.recommendedWeight?.replace(/[^\d.]/g, "") || "";
-      document.getElementById("record-sets").value = exercise?.defaultSets || 3;
-      document.getElementById("record-reps").value = exercise?.defaultReps || "10-12";
       document.getElementById("record-notes").value = "";
+      renderSetRows(normalizeSetRows([], {
+        defaultSets: exercise?.defaultSets || 3,
+        defaultReps: exercise?.defaultReps || "10-12",
+        recommendedWeight: exercise?.recommendedWeight?.replace(/[^\d.]/g, "") || ""
+      }), exercise?.recommendedWeight?.replace(/[^\d.]/g, "") || "");
       openModal("record-modal");
+    }
+
+    function renderSetRows(rows, recommendedWeight = "") {
+      const container = document.getElementById("set-rows");
+      container.innerHTML = rows.map((row, index) => `
+        <div class="rounded-2xl border border-slate-100 p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <p class="text-sm text-slate-500">第 ${index + 1} 组重量</p>
+            <input class="set-row-weight mt-2 w-full rounded-xl border border-slate-200 px-3 py-3" type="number" value="${escapeHtml(row.weight || recommendedWeight)}">
+          </div>
+          <div>
+            <p class="text-sm text-slate-500">次数</p>
+            <input class="set-row-reps mt-2 w-full rounded-xl border border-slate-200 px-3 py-3" value="${escapeHtml(row.reps)}">
+          </div>
+          <div>
+            <p class="text-sm text-slate-500">RIR</p>
+            <input class="set-row-rir mt-2 w-full rounded-xl border border-slate-200 px-3 py-3" value="${escapeHtml(row.rir)}" placeholder="比如 1 或 2">
+          </div>
+          <div class="flex items-end">
+            <button type="button" class="btn-ghost remove-set-row-btn w-full" data-index="${index}">删除这一组</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function collectSetRows() {
+      return [...document.querySelectorAll("#set-rows > div")].map((row) => ({
+        weight: Number(row.querySelector(".set-row-weight").value || 0),
+        reps: row.querySelector(".set-row-reps").value.trim(),
+        rir: row.querySelector(".set-row-rir").value.trim()
+      })).filter((row) => row.weight || row.reps || row.rir);
+    }
+
+    function addSetRow() {
+      const rows = collectSetRows();
+      rows.push(createSetRow({ reps: "10-12" }));
+      renderSetRows(rows);
     }
 
     function openReplaceModal(name, day = todayIndex()) {
@@ -965,6 +1166,54 @@
       renderTrainingPage();
       renderPlanPage(replaceContext.day);
       notify(`已将 ${replaceContext.sourceName} 替换为 ${newName}`);
+    }
+
+    function saveCurrentDayAsTemplate() {
+      const plan = structuredClone(getTodayPlan());
+      const timestamp = new Date().toLocaleString("zh-CN");
+      AppState.templates.unshift({ ...plan, createdAt: timestamp });
+      AppState.templates = AppState.templates.slice(0, 20);
+      persistState();
+      renderTemplates();
+      notify("今天的计划已保存为模板");
+    }
+
+    function applyTemplate(index, day = todayIndex()) {
+      const template = AppState.templates[index];
+      if (!template) return;
+      AppState.plan[day] = structuredClone({
+        title: template.title,
+        duration: template.duration,
+        focus: template.focus,
+        exercises: [...(template.exercises || [])]
+      });
+      persistState();
+      renderPlanPage(day);
+      if (day === todayIndex()) renderTrainingPage();
+      notify("模板已应用到计划中");
+    }
+
+    function deleteTemplate(index) {
+      AppState.templates.splice(index, 1);
+      persistState();
+      renderTemplates();
+      notify("模板已删除");
+    }
+
+    async function generateTemplateWithAI() {
+      try {
+        const result = await callAIJson(
+          "请生成一个新的训练模板，适合当前用户器材和目标，输出模板标题、训练重点、预计时长和动作列表。",
+          "返回格式：{title,focus,duration,exercises:[...]}");
+        if (!result?.title || !Array.isArray(result.exercises)) throw new Error("AI 返回的模板格式不完整");
+        AppState.templates.unshift(result);
+        AppState.templates = AppState.templates.slice(0, 20);
+        persistState();
+        renderTemplates();
+        notify("AI 新模板已加入模板库");
+      } catch (error) {
+        notify(error.message);
+      }
     }
 
     function restoreDefaultDay(day) {
@@ -1074,6 +1323,7 @@
         profile: AppState.profile,
         readiness: AppState.readiness,
         plan: AppState.plan,
+        templates: AppState.templates.slice(0, 8),
         recentRecords: AppState.records.slice(-20),
         completion: getTodayCompletedMap(),
         sessionNotes: AppState.sessionNotes,
@@ -1237,6 +1487,7 @@
       if (payload.suggestedWeekPlan) actions.push(`<button class="action-chip chat-action-btn" data-action="week">一键替换整周计划</button>`);
       if (payload.suggestedTodayPlan) actions.push(`<button class="action-chip chat-action-btn" data-action="today">一键替换今天计划</button>`);
       if (payload.suggestedExercises?.length) actions.push(`<button class="action-chip chat-action-btn" data-action="exercise">加入自定义动作库</button>`);
+      if (payload.suggestedExercises?.length) actions.push(`<button class="action-chip chat-action-btn" data-action="today-exercise">加入今天计划</button>`);
       return actions.length ? `<div class="flex flex-wrap gap-2 mt-4">${actions.join("")}</div>` : "";
     }
 
@@ -1258,11 +1509,25 @@
       }
       if (action === "exercise" && activeChatPayload.suggestedExercises?.length) {
         activeChatPayload.suggestedExercises.forEach((item) => {
-          if (!AppState.exercises.find((exercise) => exercise.name === item.name)) AppState.exercises.push(item);
+          const normalized = normalizeExerciseItem(item);
+          if (!AppState.exercises.find((exercise) => exercise.name === normalized.name)) AppState.exercises.push(normalized);
         });
         persistState();
         renderExercises();
         notify("AI 推荐动作已加入动作库");
+      }
+      if (action === "today-exercise" && activeChatPayload.suggestedExercises?.length) {
+        const todayPlan = AppState.plan[todayIndex()];
+        activeChatPayload.suggestedExercises.forEach((item) => {
+          const normalized = normalizeExerciseItem(item);
+          if (!AppState.exercises.find((exercise) => exercise.name === normalized.name)) AppState.exercises.push(normalized);
+          if (!todayPlan.exercises.includes(normalized.name)) todayPlan.exercises.push(normalized.name);
+        });
+        persistState();
+        renderExercises();
+        renderTrainingPage();
+        renderPlanPage(todayIndex());
+        notify("AI 推荐动作已加入今天计划");
       }
     }
 
@@ -1283,7 +1548,7 @@
       try {
         const payload = await callAIJson(
           `用户消息：${message}。请像真正的健身教练一样回答，并在需要时给出可直接写回系统的建议。`,
-          "返回格式：{answer,suggestedWeekPlan?:object,suggestedTodayPlan?:object,suggestedExercises?:array}"
+          "返回格式：{answer,suggestedWeekPlan?:object,suggestedTodayPlan?:object,suggestedExercises?:[{name,muscleGroup,targetMuscles,equipment,recommendedWeight,defaultSets,defaultReps,bvid,description,tips}]}"
         );
         activeChatPayload = payload;
         thinking.remove();
@@ -1368,15 +1633,23 @@
         return;
       }
       const date = document.getElementById("record-date").value || localDateValue();
+      const setDetails = collectSetRows();
+      if (!setDetails.length) {
+        notify("请至少填写一组记录");
+        return;
+      }
+      const totalReps = setDetails.map((item) => item.reps || "-").join(" / ");
+      const bestWeight = Math.max(...setDetails.map((item) => Number(item.weight) || 0));
       AppState.records.push({
         id: Date.now(),
         date,
         weekKey: currentWeekKey(),
         dayOfWeek: new Date(date).getDay(),
         exerciseName,
-        weight: Number(document.getElementById("record-weight").value || 0),
-        sets: Number(document.getElementById("record-sets").value || 0),
-        reps: document.getElementById("record-reps").value.trim() || "10",
+        weight: bestWeight,
+        sets: setDetails.length,
+        reps: totalReps,
+        setDetails,
         notes: document.getElementById("record-notes").value.trim()
       });
       const completionKey = getCompletionKey(new Date(date).getDay(), date);
@@ -1413,7 +1686,10 @@
         sendChatMessage();
       }));
       document.getElementById("record-form").addEventListener("submit", handleRecordSubmit);
+      document.getElementById("add-set-row-btn").addEventListener("click", addSetRow);
       document.getElementById("add-custom-exercise-btn").addEventListener("click", addCustomExercise);
+      document.getElementById("save-day-template-btn").addEventListener("click", saveCurrentDayAsTemplate);
+      document.getElementById("generate-template-ai-btn").addEventListener("click", generateTemplateWithAI);
       document.getElementById("exercise-search").addEventListener("input", renderExercises);
       document.getElementById("replace-search-input").addEventListener("input", renderReplaceCandidates);
       document.getElementById("save-profile-btn").addEventListener("click", saveProfile);
@@ -1440,6 +1716,13 @@
           toggleExerciseCompletion(event.target.dataset.name, event.target.checked);
         }
       });
+      document.addEventListener("click", (event) => {
+        if (event.target.classList.contains("remove-set-row-btn")) {
+          const rows = collectSetRows();
+          rows.splice(Number(event.target.dataset.index), 1);
+          renderSetRows(rows.length ? rows : [createSetRow({ reps: "10-12" })]);
+        }
+      });
     }
 
     function init() {
@@ -1450,6 +1733,8 @@
       renderDashboard();
       renderTrainingPage();
       renderPlanPage();
+      renderTemplates();
+      renderAnalytics();
       renderHistory();
       renderExercises();
       switchPage("dashboard");
@@ -1465,6 +1750,8 @@
     window.openReplaceModal = openReplaceModal;
     window.replaceExercise = replaceExercise;
     window.restoreDefaultDay = restoreDefaultDay;
+    window.applyTemplate = applyTemplate;
+    window.deleteTemplate = deleteTemplate;
   </script>
 </body>
 </html>
