@@ -55,6 +55,12 @@
     .quick-chip { background: #E8F3FF; color: #165DFF; border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .quick-chip:hover { background: #d8e9ff; }
     .toast { position: fixed; right: 20px; top: 20px; z-index: 2000; padding: 14px 18px; background: #00B42A; color: #fff; border-radius: 14px; box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+    .btn-ghost { background: #F5F7FA; color: #475569; padding: 10px 14px; border-radius: 12px; border: 1px solid #E2E8F0; font-weight: 600; cursor: pointer; }
+    .btn-ghost:hover { background: #E8F3FF; color: #165DFF; }
+    .progress-track { height: 10px; background: #E2E8F0; border-radius: 999px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #165DFF 0%, #69B1FF 100%); border-radius: 999px; transition: width .25s ease; }
+    .mini-note { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 12px 14px; }
+    .timer-pill { min-width: 96px; text-align: center; font-variant-numeric: tabular-nums; }
     @keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes blink { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
@@ -174,6 +180,42 @@
             <div id="recent-records-list" class="space-y-3 max-h-[360px] overflow-y-auto"></div>
           </div>
         </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="xl:col-span-2 bg-white rounded-3xl p-6 card-shadow">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-lg font-bold">AI 长期记忆</h3>
+                <p class="text-slate-500 mt-2">每次复盘、风险提醒和推进建议都会沉淀在这里，方便你回看 AI 是如何推动计划进化的。</p>
+              </div>
+              <button id="clear-memory-btn" class="btn-ghost">清理记忆</button>
+            </div>
+            <div id="memory-timeline" class="space-y-3 mt-6"></div>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow">
+            <h3 class="text-lg font-bold">恢复工具</h3>
+            <p class="text-slate-500 mt-2">训练时可以直接开组间休息计时，也能记录今天的主观感受。</p>
+            <div class="mini-note mt-5">
+              <p class="text-sm text-slate-500">休息计时器</p>
+              <div id="rest-timer-display" class="text-3xl font-bold text-primary mt-2 timer-pill">01:30</div>
+              <div class="flex flex-wrap gap-2 mt-4">
+                <button class="btn-primary timer-preset-btn" data-seconds="60">1 分钟</button>
+                <button class="btn-secondary timer-preset-btn" data-seconds="90">90 秒</button>
+                <button class="btn-secondary timer-preset-btn" data-seconds="120">2 分钟</button>
+              </div>
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button id="start-rest-timer-btn" class="btn-primary">开始</button>
+                <button id="pause-rest-timer-btn" class="btn-secondary">暂停</button>
+                <button id="reset-rest-timer-btn" class="btn-ghost">重置</button>
+              </div>
+            </div>
+            <div class="mini-note mt-4">
+              <p class="text-sm text-slate-500">今日主观状态</p>
+              <textarea id="quick-recovery-note" rows="4" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3" placeholder="比如：今天肩前束有点紧，卧推前想先多做热身。"></textarea>
+              <button id="save-recovery-note-btn" class="btn-secondary w-full mt-3">保存这条恢复备注</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="training" class="page-section space-y-6">
@@ -211,6 +253,27 @@
         <div class="bg-white rounded-3xl p-6 card-shadow">
           <h3 class="text-lg font-bold mb-4">今日动作安排</h3>
           <div id="today-workout-list" class="space-y-4"></div>
+        </div>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="xl:col-span-2 bg-white rounded-3xl p-6 card-shadow">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-lg font-bold">训练完成度</h3>
+                <p class="text-slate-500 mt-2">你可以手动勾选已完成动作，AI 会结合完成情况做后续建议。</p>
+              </div>
+              <span id="today-progress-label" class="action-chip">0 / 0</span>
+            </div>
+            <div class="progress-track mt-5">
+              <div id="today-progress-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
+            <div id="today-completion-list" class="space-y-3 mt-5"></div>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow">
+            <h3 class="text-lg font-bold">本次训练备注</h3>
+            <p class="text-slate-500 mt-2">记录今天器械状态、感觉、泵感和异常情况，后续会直接进入 AI 复盘上下文。</p>
+            <textarea id="session-note-input" rows="8" class="mt-5 w-full rounded-2xl border border-slate-200 px-4 py-3" placeholder="比如：今天卧推第三组明显掉速，右侧肩有一点顶。"></textarea>
+            <button id="save-session-note-btn" class="btn-primary w-full mt-4">保存本次训练备注</button>
+          </div>
         </div>
       </section>
 
@@ -357,6 +420,31 @@
     </div>
   </div>
 
+  <div id="replace-modal" class="modal-overlay">
+    <div class="modal-content max-w-3xl">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-sm text-slate-500">替换动作</p>
+          <h3 class="text-2xl font-bold mt-1">手动替换今天计划里的动作</h3>
+        </div>
+        <button class="btn-secondary" onclick="closeModal('replace-modal')">关闭</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 mt-6">
+        <div class="mini-note">
+          <p class="text-sm text-slate-500">当前动作</p>
+          <p id="replace-source-name" class="text-xl font-bold mt-2"></p>
+          <p id="replace-source-meta" class="text-slate-500 mt-2"></p>
+        </div>
+        <div class="mini-note">
+          <p class="text-sm text-slate-500">筛选</p>
+          <input id="replace-search-input" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3" placeholder="搜索动作、部位或器材">
+          <p id="replace-filter-hint" class="text-sm text-slate-500 mt-3"></p>
+        </div>
+      </div>
+      <div id="replace-candidates" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"></div>
+    </div>
+  </div>
+
   <script>
     const DAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
     const STORAGE_KEY = "fit-ai-html-v3";
@@ -401,6 +489,8 @@
     const AppState = loadState();
     let progressChart = null;
     let activeChatPayload = null;
+    let replaceContext = null;
+    let restTimerId = null;
 
     function loadState() {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -412,6 +502,9 @@
         plan: saved.plan || structuredClone(DEFAULT_PLAN),
         records: saved.records || [],
         exercises: saved.exercises || DEFAULT_EXERCISES,
+        completed: saved.completed || {},
+        sessionNotes: saved.sessionNotes || {},
+        restTimer: saved.restTimer || { preset: 90, remaining: 90, running: false },
         ai: saved.ai || {
           summary: "完成一次训练后，AI 会开始建立长期记忆与进阶建议。",
           weeklyFocus: "优先建立稳定记录习惯。",
@@ -435,6 +528,9 @@
         plan: AppState.plan,
         records: AppState.records,
         exercises: AppState.exercises,
+        completed: AppState.completed,
+        sessionNotes: AppState.sessionNotes,
+        restTimer: AppState.restTimer,
         ai: AppState.ai
       }));
     }
@@ -486,12 +582,38 @@
       return AppState.plan[todayIndex()] || { title: "今日训练", duration: "-", focus: "等待 AI 生成", exercises: [] };
     }
 
+    function getCompletionKey(day = todayIndex(), date = localDateValue()) {
+      return `${date}-${day}`;
+    }
+
+    function getTodayCompletedMap() {
+      return AppState.completed[getCompletionKey()] || {};
+    }
+
+    function getSessionNoteKey(date = localDateValue()) {
+      return date;
+    }
+
+    function getRecommendedReplacements(name) {
+      const source = getExercise(name);
+      const keyword = (document.getElementById("replace-search-input")?.value || "").trim().toLowerCase();
+      return AppState.exercises.filter((item) => {
+        if (item.name === name) return false;
+        const sameGroup = !source || item.muscleGroup === source.muscleGroup;
+        const matchesKeyword = !keyword || item.name.toLowerCase().includes(keyword) || item.muscleGroup.toLowerCase().includes(keyword) || item.equipment.toLowerCase().includes(keyword);
+        return matchesKeyword && (sameGroup || keyword);
+      });
+    }
+
     function getStats() {
       const dates = [...new Set(AppState.records.map((item) => item.date))];
       const maxWeight = AppState.records.reduce((max, item) => Math.max(max, Number(item.weight) || 0), 0);
       const totalVolume = AppState.records.reduce((sum, item) => sum + ((Number(item.weight) || 0) * (Number(item.sets) || 0) * (parseInt(item.reps, 10) || 0)), 0);
       const weekCount = AppState.records.filter((item) => item.weekKey === currentWeekKey()).length;
-      return { totalDays: dates.length, weekCount, maxWeight, totalVolume };
+      const completedMap = getTodayCompletedMap();
+      const todayPlan = getTodayPlan();
+      const completedCount = (todayPlan.exercises || []).filter((name) => completedMap[name]).length;
+      return { totalDays: dates.length, weekCount, maxWeight, totalVolume, completedCount, todayCount: todayPlan.exercises.length };
     }
 
     function fillReadinessSelects() {
@@ -582,6 +704,20 @@
         </div>
       `).join("") : `<p class="text-slate-400 text-center py-10">还没有训练记录</p>`;
 
+      const memoryItems = AppState.ai.memory.slice(-8).reverse();
+      document.getElementById("memory-timeline").innerHTML = memoryItems.length ? memoryItems.map((item) => `
+        <div class="rounded-2xl border border-slate-100 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <p class="font-semibold text-slate-700">AI 记忆条目</p>
+            <span class="text-xs text-slate-400">${escapeHtml(item.time || "")}</span>
+          </div>
+          <p class="text-slate-600 leading-7 mt-2">${escapeHtml(item.content || "")}</p>
+        </div>
+      `).join("") : `<p class="text-slate-400 text-center py-10">完成几次训练后，这里会开始形成 AI 长期记忆。</p>`;
+
+      document.getElementById("rest-timer-display").textContent = formatTimer(AppState.restTimer.remaining);
+      document.getElementById("quick-recovery-note").value = AppState.sessionNotes[getSessionNoteKey()]?.recovery || "";
+
       renderChart(8);
     }
 
@@ -617,6 +753,7 @@
 
     function renderTrainingPage() {
       const plan = getTodayPlan();
+      const completedMap = getTodayCompletedMap();
       document.getElementById("training-plan-title").textContent = plan.title;
       document.getElementById("training-plan-focus").textContent = `${plan.focus} · 预计 ${plan.duration}`;
       document.getElementById("daily-ai-briefing").textContent = AppState.ai.todayDecision || "等待 AI 读取你的今日状态。";
@@ -629,14 +766,32 @@
               <p class="text-lg font-bold">${escapeHtml(name)}</p>
               <p class="text-slate-500 mt-1">${escapeHtml(exercise?.muscleGroup || "恢复")} · ${escapeHtml(exercise?.equipment || "无需器材")}</p>
               <p class="text-sm text-slate-400 mt-2">上次记录：${last ? `${last.weight}kg · ${last.sets} 组 · ${last.reps}` : "暂无"}</p>
+              <p class="text-sm mt-2 ${completedMap[name] ? "text-success" : "text-slate-400"}">${completedMap[name] ? "已完成这项动作" : "还未完成这项动作"}</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <button class="btn-secondary" onclick="openExerciseModal('${escapeHtml(name)}')">看动作</button>
+              <button class="btn-ghost" onclick="openReplaceModal('${escapeHtml(name)}', ${todayIndex()})">手动替换</button>
               <button class="btn-primary" onclick="openRecordModal('${escapeHtml(name)}')">记录</button>
             </div>
           </div>
         `;
       }).join("");
+
+      const completedCount = (plan.exercises || []).filter((name) => completedMap[name]).length;
+      const total = plan.exercises.length || 0;
+      const percent = total ? Math.round((completedCount / total) * 100) : 0;
+      document.getElementById("today-progress-label").textContent = `${completedCount} / ${total}`;
+      document.getElementById("today-progress-bar").style.width = `${percent}%`;
+      document.getElementById("today-completion-list").innerHTML = total ? plan.exercises.map((name) => `
+        <label class="rounded-2xl border border-slate-100 p-4 flex items-center justify-between gap-4 cursor-pointer">
+          <div>
+            <p class="font-semibold">${escapeHtml(name)}</p>
+            <p class="text-sm text-slate-500 mt-1">${escapeHtml(getExercise(name)?.muscleGroup || "训练动作")}</p>
+          </div>
+          <input type="checkbox" class="w-5 h-5 completion-checkbox" data-name="${escapeHtml(name)}" ${completedMap[name] ? "checked" : ""}>
+        </label>
+      `).join("") : `<div class="rounded-2xl bg-slate-50 p-4 text-slate-500">今天是主动恢复日，可以散步、拉伸或者轻度活动。</div>`;
+      document.getElementById("session-note-input").value = AppState.sessionNotes[getSessionNoteKey()]?.session || "";
     }
 
     function renderPlanPage(activeDay = todayIndex()) {
@@ -652,17 +807,33 @@
               <h4 class="text-xl font-bold">${escapeHtml(detail.title)}</h4>
               <p class="text-slate-500 mt-2">${escapeHtml(detail.focus)} · ${escapeHtml(detail.duration)}</p>
             </div>
-            <button class="btn-secondary" onclick="requestDayReplacement(${activeDay})">AI 替换这一天</button>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn-secondary" onclick="requestDayReplacement(${activeDay})">AI 替换这一天</button>
+              <button class="btn-ghost" onclick="restoreDefaultDay(${activeDay})">恢复默认模板</button>
+            </div>
           </div>
           <div class="space-y-3 mt-6">
-            ${detail.exercises.length ? detail.exercises.map((name) => `<div class="rounded-2xl bg-slate-50 p-4 font-medium">${escapeHtml(name)}</div>`).join("") : '<div class="rounded-2xl bg-slate-50 p-4 text-slate-500">主动恢复日</div>'}
+            ${detail.exercises.length ? detail.exercises.map((name) => `
+              <div class="rounded-2xl bg-slate-50 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <p class="font-medium">${escapeHtml(name)}</p>
+                  <p class="text-sm text-slate-500 mt-1">${escapeHtml(getExercise(name)?.muscleGroup || "训练动作")} · ${escapeHtml(getExercise(name)?.equipment || "训练安排")}</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button class="btn-secondary" onclick="openExerciseModal('${escapeHtml(name)}')">查看</button>
+                  <button class="btn-ghost" onclick="openReplaceModal('${escapeHtml(name)}', ${activeDay})">手动替换</button>
+                </div>
+              </div>
+            `).join("") : '<div class="rounded-2xl bg-slate-50 p-4 text-slate-500">主动恢复日</div>'}
           </div>
         </div>
       `;
     }
 
     function renderHistory() {
-      document.getElementById("history-list").innerHTML = AppState.records.length ? [...AppState.records].reverse().map((item) => `
+      const notes = Object.entries(AppState.sessionNotes).filter(([, value]) => value?.session || value?.recovery).slice(-4).reverse();
+      document.getElementById("history-list").innerHTML = [
+        AppState.records.length ? [...AppState.records].reverse().map((item) => `
         <div class="rounded-2xl border border-slate-100 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
             <p class="font-semibold">${escapeHtml(item.exerciseName)}</p>
@@ -670,7 +841,22 @@
           </div>
           <div class="text-sm text-slate-600">${escapeHtml(item.weight)}kg · ${escapeHtml(item.sets)} 组 · ${escapeHtml(item.reps)}</div>
         </div>
-      `).join("") : '<p class="text-slate-400 text-center py-10">还没有历史记录</p>';
+      `).join("") : '<p class="text-slate-400 text-center py-10">还没有历史记录</p>',
+        notes.length ? `
+          <div class="rounded-3xl border border-dashed border-slate-200 p-5 mt-4">
+            <h4 class="text-lg font-bold">近期训练备注</h4>
+            <div class="space-y-3 mt-4">
+              ${notes.map(([date, value]) => `
+                <div class="mini-note">
+                  <p class="font-semibold">${escapeHtml(date)}</p>
+                  ${value.session ? `<p class="text-slate-600 mt-2 leading-7">训练备注：${escapeHtml(value.session)}</p>` : ""}
+                  ${value.recovery ? `<p class="text-slate-500 mt-2 leading-7">恢复备注：${escapeHtml(value.recovery)}</p>` : ""}
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        ` : ""
+      ].join("");
     }
 
     function renderExercises() {
@@ -738,12 +924,159 @@
       openModal("record-modal");
     }
 
+    function openReplaceModal(name, day = todayIndex()) {
+      replaceContext = { sourceName: name, day };
+      const source = getExercise(name);
+      document.getElementById("replace-source-name").textContent = name;
+      document.getElementById("replace-source-meta").textContent = source ? `${source.muscleGroup} · ${source.equipment}` : "原动作信息待补充";
+      document.getElementById("replace-filter-hint").textContent = source ? `优先显示与 ${source.muscleGroup} 同部位的动作。` : "你可以搜索任意动作进行替换。";
+      document.getElementById("replace-search-input").value = "";
+      renderReplaceCandidates();
+      openModal("replace-modal");
+    }
+
+    function renderReplaceCandidates() {
+      if (!replaceContext) return;
+      const source = getExercise(replaceContext.sourceName);
+      const allCandidates = getRecommendedReplacements(replaceContext.sourceName);
+      const fallbackCandidates = AppState.exercises.filter((item) => item.name !== replaceContext.sourceName);
+      const candidates = (allCandidates.length ? allCandidates : fallbackCandidates).slice(0, 18);
+      document.getElementById("replace-candidates").innerHTML = candidates.length ? candidates.map((item) => `
+        <div class="rounded-2xl border border-slate-100 p-4">
+          <p class="text-sm text-slate-500">${escapeHtml(item.muscleGroup)}</p>
+          <p class="text-lg font-bold mt-2">${escapeHtml(item.name)}</p>
+          <p class="text-sm text-slate-500 mt-2">${escapeHtml(item.equipment)}</p>
+          <p class="text-sm text-slate-400 mt-2">${escapeHtml((item.targetMuscles || []).join(" · "))}</p>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <button class="btn-secondary" onclick="openExerciseModal('${escapeHtml(item.name)}')">查看动作</button>
+            <button class="btn-primary" onclick="replaceExercise('${escapeHtml(item.name)}')">${source?.muscleGroup === item.muscleGroup ? "直接替换" : "仍然替换"}</button>
+          </div>
+        </div>
+      `).join("") : `<div class="rounded-2xl bg-slate-50 p-4 text-slate-500 md:col-span-2">没有找到匹配动作，你可以先去动作库里新增自定义动作后再替换。</div>`;
+    }
+
+    function replaceExercise(newName) {
+      if (!replaceContext) return;
+      const detail = AppState.plan[replaceContext.day];
+      if (!detail) return;
+      detail.exercises = detail.exercises.map((item) => item === replaceContext.sourceName ? newName : item);
+      persistState();
+      closeModal("replace-modal");
+      renderTrainingPage();
+      renderPlanPage(replaceContext.day);
+      notify(`已将 ${replaceContext.sourceName} 替换为 ${newName}`);
+    }
+
+    function restoreDefaultDay(day) {
+      AppState.plan[day] = structuredClone(DEFAULT_PLAN[day]);
+      persistState();
+      renderPlanPage(day);
+      if (day === todayIndex()) renderTrainingPage();
+      notify("已恢复这一天的默认模板");
+    }
+
+    function toggleExerciseCompletion(name, checked) {
+      const key = getCompletionKey();
+      AppState.completed[key] = { ...(AppState.completed[key] || {}), [name]: checked };
+      persistState();
+      renderTrainingPage();
+      renderDashboard();
+    }
+
+    function saveSessionNote() {
+      const key = getSessionNoteKey();
+      AppState.sessionNotes[key] = {
+        ...(AppState.sessionNotes[key] || {}),
+        session: document.getElementById("session-note-input").value.trim()
+      };
+      persistState();
+      renderHistory();
+      notify("本次训练备注已保存");
+    }
+
+    function saveRecoveryNote() {
+      const key = getSessionNoteKey();
+      AppState.sessionNotes[key] = {
+        ...(AppState.sessionNotes[key] || {}),
+        recovery: document.getElementById("quick-recovery-note").value.trim()
+      };
+      persistState();
+      renderHistory();
+      notify("恢复备注已保存");
+    }
+
+    function clearAIMemory() {
+      AppState.ai.memory = [];
+      persistState();
+      renderDashboard();
+      notify("AI 长期记忆已清理");
+    }
+
+    function formatTimer(totalSeconds) {
+      const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      return `${minutes}:${seconds}`;
+    }
+
+    function syncTimerDisplay() {
+      document.getElementById("rest-timer-display").textContent = formatTimer(AppState.restTimer.remaining);
+    }
+
+    function setTimerPreset(seconds) {
+      AppState.restTimer.preset = seconds;
+      AppState.restTimer.remaining = seconds;
+      AppState.restTimer.running = false;
+      if (restTimerId) clearInterval(restTimerId);
+      restTimerId = null;
+      persistState();
+      syncTimerDisplay();
+    }
+
+    function startRestTimer() {
+      if (restTimerId) return;
+      AppState.restTimer.running = true;
+      restTimerId = setInterval(() => {
+        if (AppState.restTimer.remaining <= 1) {
+          clearInterval(restTimerId);
+          restTimerId = null;
+          AppState.restTimer.remaining = 0;
+          AppState.restTimer.running = false;
+          persistState();
+          syncTimerDisplay();
+          notify("休息时间到了，准备下一组");
+          return;
+        }
+        AppState.restTimer.remaining -= 1;
+        syncTimerDisplay();
+      }, 1000);
+      persistState();
+    }
+
+    function pauseRestTimer() {
+      if (restTimerId) {
+        clearInterval(restTimerId);
+        restTimerId = null;
+      }
+      AppState.restTimer.running = false;
+      persistState();
+      syncTimerDisplay();
+    }
+
+    function resetRestTimer() {
+      pauseRestTimer();
+      AppState.restTimer.remaining = AppState.restTimer.preset;
+      persistState();
+      syncTimerDisplay();
+    }
+
     function collectAIContext() {
       return {
         profile: AppState.profile,
         readiness: AppState.readiness,
         plan: AppState.plan,
         recentRecords: AppState.records.slice(-20),
+        completion: getTodayCompletedMap(),
+        sessionNotes: AppState.sessionNotes,
         aiMemory: AppState.ai.memory.slice(-10),
         exerciseCatalog: AppState.exercises.slice(0, 30)
       };
@@ -1046,6 +1379,11 @@
         reps: document.getElementById("record-reps").value.trim() || "10",
         notes: document.getElementById("record-notes").value.trim()
       });
+      const completionKey = getCompletionKey(new Date(date).getDay(), date);
+      AppState.completed[completionKey] = {
+        ...(AppState.completed[completionKey] || {}),
+        [exerciseName]: true
+      };
       persistState();
       closeModal("record-modal");
       renderDashboard();
@@ -1077,9 +1415,17 @@
       document.getElementById("record-form").addEventListener("submit", handleRecordSubmit);
       document.getElementById("add-custom-exercise-btn").addEventListener("click", addCustomExercise);
       document.getElementById("exercise-search").addEventListener("input", renderExercises);
+      document.getElementById("replace-search-input").addEventListener("input", renderReplaceCandidates);
       document.getElementById("save-profile-btn").addEventListener("click", saveProfile);
       document.getElementById("generate-diet-btn").addEventListener("click", generateDietAdvice);
       document.getElementById("export-data-btn").addEventListener("click", exportData);
+      document.getElementById("save-session-note-btn").addEventListener("click", saveSessionNote);
+      document.getElementById("save-recovery-note-btn").addEventListener("click", saveRecoveryNote);
+      document.getElementById("clear-memory-btn").addEventListener("click", clearAIMemory);
+      document.getElementById("start-rest-timer-btn").addEventListener("click", startRestTimer);
+      document.getElementById("pause-rest-timer-btn").addEventListener("click", pauseRestTimer);
+      document.getElementById("reset-rest-timer-btn").addEventListener("click", resetRestTimer);
+      document.querySelectorAll(".timer-preset-btn").forEach((button) => button.addEventListener("click", () => setTimerPreset(Number(button.dataset.seconds))));
       document.getElementById("plan-chat-jump-btn").addEventListener("click", () => {
         switchPage("ai-chat");
         document.getElementById("chat-input").value = "帮我重排本周训练计划";
@@ -1088,6 +1434,11 @@
         overlay.addEventListener("click", (event) => {
           if (event.target === overlay) overlay.classList.remove("active");
         });
+      });
+      document.addEventListener("change", (event) => {
+        if (event.target.classList.contains("completion-checkbox")) {
+          toggleExerciseCompletion(event.target.dataset.name, event.target.checked);
+        }
       });
     }
 
@@ -1111,6 +1462,9 @@
     window.closeModal = closeModal;
     window.renderPlanPage = renderPlanPage;
     window.requestDayReplacement = requestDayReplacement;
+    window.openReplaceModal = openReplaceModal;
+    window.replaceExercise = replaceExercise;
+    window.restoreDefaultDay = restoreDefaultDay;
   </script>
 </body>
 </html>
