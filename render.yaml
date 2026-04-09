@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: fit-ai-coach-api
+    runtime: node
+    plan: starter
+    region: singapore
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/bootstrap
+    disk:
+      name: fit-ai-data
+      mountPath: /opt/render/project/src/server/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AI_API_ENDPOINT
+        value: https://api.866646.xyz/v1/chat/completions
+      - key: AI_MODEL
+        value: doubao-seed-2.0-pro
+      - key: AI_API_KEY
+        sync: false

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fit AI Coach</string>
+    <string name="title_activity_main">Fit AI Coach</string>
+    <string name="package_name">com.fitai.coachos</string>
+    <string name="custom_url_scheme">com.fitai.coachos</string>
+</resources>

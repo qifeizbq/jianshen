@@ -1,0 +1,12 @@
+{
+  "appId": "com.fitai.coachos",
+  "appName": "Fit AI Coach",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "cleartext": true
+  }
+}
