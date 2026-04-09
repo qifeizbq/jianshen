@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 智能健身教练</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#165DFF",
+            secondary: "#4080FF",
+            light: "#E8F3FF",
+            dark: "#0E42B3",
+            neutral: "#F5F7FA",
+            success: "#00B42A",
+            warning: "#FF7D00",
+            danger: "#F53F3F"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #F5F7FA; }
+    .card-shadow { box-shadow: 0 10px 32px rgba(22, 93, 255, 0.08); }
+    .card-hover { transition: transform .25s ease, box-shadow .25s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(22, 93, 255, 0.14); }
+    .nav-item { cursor: pointer; padding: 12px 18px; border-radius: 14px; display: flex; gap: 12px; align-items: center; transition: all .25s ease; }
+    .nav-item:hover { background: #E8F3FF; }
+    .nav-item.active { background: linear-gradient(135deg, #165DFF 0%, #4080FF 100%); color: #fff; }
+    .page-section { display: none; animation: fadeIn .35s ease; }
+    .page-section.active { display: block; }
+    .btn-primary { background: linear-gradient(135deg, #165DFF 0%, #4080FF 100%); color: white; padding: 12px 18px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all .25s ease; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(22, 93, 255, 0.24); }
+    .btn-secondary { background: white; color: #165DFF; padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(22, 93, 255, .22); font-weight: 600; cursor: pointer; }
+    .btn-secondary:hover { background: #E8F3FF; }
+    .action-chip { border: 1px solid rgba(22, 93, 255, .18); background: #fff; color: #165DFF; border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .action-chip:hover { background: #E8F3FF; }
+    .chat-message { max-width: 82%; padding: 14px 18px; border-radius: 18px; margin-bottom: 12px; }
+    .chat-message.user { background: linear-gradient(135deg, #165DFF 0%, #4080FF 100%); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+    .chat-message.ai { background: white; color: #1f2937; border-bottom-left-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, .45); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { width: 100%; max-width: 960px; max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 24px; padding: 24px; animation: rise .3s ease; }
+    .typing span { animation: blink 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+    .mobile-nav { position: fixed; left: 0; right: 0; bottom: 0; display: none; background: white; box-shadow: 0 -6px 20px rgba(0,0,0,.12); z-index: 80; }
+    .quick-chip { background: #E8F3FF; color: #165DFF; border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .quick-chip:hover { background: #d8e9ff; }
+    .toast { position: fixed; right: 20px; top: 20px; z-index: 2000; padding: 14px 18px; background: #00B42A; color: #fff; border-radius: 14px; box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+    @keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes blink { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+    @media (max-width: 768px) {
+      .desktop-sidebar { display: none !important; }
+      .mobile-nav { display: block; }
+      main { margin-left: 0 !important; padding-bottom: 86px; }
+      .chat-message { max-width: 94%; }
+    }
+  </style>
+</head>
+<body class="bg-neutral text-slate-800">
+  <aside class="desktop-sidebar fixed top-0 left-0 w-72 h-full bg-white shadow-2xl z-50 flex flex-col">
+    <div class="p-6 border-b border-slate-100">
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-3">
+        <i class="fa fa-heartbeat text-primary text-3xl"></i>
+        AI 智能健身教练
+      </h1>
+      <p class="text-sm text-slate-500 mt-2">训练记录、AI 复盘、计划推进、动作替换</p>
+    </div>
+    <nav class="flex-1 py-6 px-4 overflow-y-auto">
+      <div class="space-y-2">
+        <div class="nav-item active" data-page="dashboard"><i class="fa fa-dashboard w-6 text-xl"></i><span>数据仪表盘</span></div>
+        <div class="nav-item" data-page="training"><i class="fa fa-calendar-check-o w-6 text-xl"></i><span>今日训练</span></div>
+        <div class="nav-item" data-page="plan"><i class="fa fa-list-alt w-6 text-xl"></i><span>周训练计划</span></div>
+        <div class="nav-item" data-page="history"><i class="fa fa-history w-6 text-xl"></i><span>历史记录</span></div>
+        <div class="nav-item" data-page="ai-chat"><i class="fa fa-robot w-6 text-xl"></i><span>AI 对话</span></div>
+        <div class="nav-item" data-page="exercises"><i class="fa fa-video-camera w-6 text-xl"></i><span>动作教程</span></div>
+        <div class="nav-item" data-page="profile"><i class="fa fa-sliders w-6 text-xl"></i><span>AI 档案</span></div>
+      </div>
+    </nav>
+    <div class="p-4 border-t border-slate-100">
+      <div class="rounded-2xl p-4 bg-gradient-to-br from-light to-white">
+        <p class="text-xs text-slate-500 mb-1">AI 工作方式</p>
+        <p class="text-sm font-semibold text-primary leading-6">每次训练结束后自动复盘，并为下一次训练生成重量、次数、动作替换和计划调整建议。</p>
+      </div>
+    </div>
+  </aside>
+
+  <nav class="mobile-nav">
+    <div class="grid grid-cols-5 gap-1 p-2 text-xs">
+      <button class="mobile-nav-btn py-2 text-primary" data-page="dashboard"><i class="fa fa-dashboard block text-lg"></i>首页</button>
+      <button class="mobile-nav-btn py-2 text-slate-500" data-page="training"><i class="fa fa-play-circle block text-lg"></i>训练</button>
+      <button class="mobile-nav-btn py-2 text-slate-500" data-page="plan"><i class="fa fa-calendar block text-lg"></i>计划</button>
+      <button class="mobile-nav-btn py-2 text-slate-500" data-page="ai-chat"><i class="fa fa-robot block text-lg"></i>AI</button>
+      <button class="mobile-nav-btn py-2 text-slate-500" data-page="profile"><i class="fa fa-sliders block text-lg"></i>设置</button>
+    </div>
+  </nav>
+
+  <main class="ml-72 min-h-screen">
+    <header class="sticky top-0 bg-white/95 backdrop-blur shadow-sm z-40">
+      <div class="px-6 py-4 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800" id="page-title">数据仪表盘</h2>
+          <p class="text-sm text-slate-500" id="current-date-display"></p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button id="refresh-ai-btn" class="btn-secondary"><i class="fa fa-refresh mr-2"></i>刷新 AI</button>
+          <button id="finish-workout-btn" class="btn-primary"><i class="fa fa-check-circle mr-2"></i>完成本次训练</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-6 space-y-6">
+      <section id="dashboard" class="page-section active space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div class="bg-white rounded-3xl p-6 card-shadow card-hover">
+            <p class="text-sm text-slate-500">累计训练天数</p>
+            <h3 id="stat-total-days" class="text-4xl font-bold text-primary mt-2">0</h3>
+            <p class="text-sm text-success mt-2">连续打卡 <span id="stat-streak">0</span> 天</p>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow card-hover">
+            <p class="text-sm text-slate-500">本周训练次数</p>
+            <h3 id="stat-week-count" class="text-4xl font-bold text-primary mt-2">0</h3>
+            <p class="text-sm text-slate-500 mt-2">当前周计划执行率 <span id="stat-completion" class="font-bold text-primary">0%</span></p>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow card-hover">
+            <p class="text-sm text-slate-500">最大训练重量</p>
+            <h3 class="text-4xl font-bold text-primary mt-2"><span id="stat-max-weight">0</span><span class="text-lg ml-1">kg</span></h3>
+            <p class="text-sm text-slate-500 mt-2">训练总量 <span id="stat-total-volume" class="font-bold text-primary">0</span></p>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow card-hover">
+            <p class="text-sm text-slate-500">下一次训练重点</p>
+            <h3 id="stat-next-focus" class="text-xl font-bold text-primary mt-2 leading-8">等待 AI 生成</h3>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="bg-white rounded-3xl p-6 card-shadow xl:col-span-1">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold">今日训练任务</h3>
+              <span id="today-day-label" class="bg-light text-primary px-3 py-1 rounded-full text-sm font-medium"></span>
+            </div>
+            <div id="today-training-preview" class="space-y-3"></div>
+            <button class="btn-primary w-full mt-4" onclick="switchPage('training')"><i class="fa fa-play-circle mr-2"></i>开始今日训练</button>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow xl:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold">重量趋势</h3>
+              <div class="flex gap-2">
+                <button class="action-chip chart-filter active" data-period="8">近 8 次</button>
+                <button class="action-chip chart-filter" data-period="20">近 20 次</button>
+              </div>
+            </div>
+            <div class="h-72"><canvas id="progress-chart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="xl:col-span-2 bg-gradient-to-br from-primary to-secondary rounded-3xl p-6 text-white card-shadow">
+            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa fa-robot"></i> AI 总控中心</h3>
+            <p class="text-white/85 mt-2">AI 会审视你的历史数据、当前恢复状态和训练目标，自动推进接下来的训练逻辑。</p>
+            <div id="ai-control-panel" class="grid md:grid-cols-2 gap-4 mt-5"></div>
+          </div>
+          <div class="bg-white rounded-3xl p-6 card-shadow">
+            <h3 class="text-lg font-bold mb-4">最近训练记录</h3>
+            <div id="recent-records-list" class="space-y-3 max-h-[360px] overflow-y-auto"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="training" class="page-section space-y-6">
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 class="text-xl font-bold" id="training-plan-title">今日训练</h3>
+              <p class="text-slate-500 mt-2" id="training-plan-focus"></p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="generate-daily-ai-btn" class="btn-secondary">AI 训练微调</button>
+              <button id="regenerate-plan-btn" class="btn-primary">AI 重做本周计划</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <label class="block">
+              <span class="text-sm text-slate-500">睡眠</span>
+              <select id="readiness-sleep" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></select>
+            </label>
+            <label class="block">
+              <span class="text-sm text-slate-500">精力</span>
+              <select id="readiness-energy" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></select>
+            </label>
+            <label class="block">
+              <span class="text-sm text-slate-500">酸痛</span>
+              <select id="readiness-soreness" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></select>
+            </label>
+            <label class="block">
+              <span class="text-sm text-slate-500">压力</span>
+              <select id="readiness-stress" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></select>
+            </label>
+          </div>
+          <div id="daily-ai-briefing" class="mt-5 rounded-2xl bg-light p-4 text-slate-700 leading-7">等待 AI 读取你的今日状态。</div>
+        </div>
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <h3 class="text-lg font-bold mb-4">今日动作安排</h3>
+          <div id="today-workout-list" class="space-y-4"></div>
+        </div>
+      </section>
+
+      <section id="plan" class="page-section space-y-6">
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 class="text-xl font-bold">周训练计划</h3>
+              <p class="text-slate-500 mt-2">你可以让 AI 直接替换整周计划，也可以只替换某一天的动作安排。</p>
+            </div>
+            <button id="plan-chat-jump-btn" class="btn-secondary">去 AI 对话里改计划</button>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-6" id="plan-day-tabs"></div>
+          <div id="plan-day-detail" class="mt-6"></div>
+        </div>
+      </section>
+
+      <section id="history" class="page-section space-y-6">
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 class="text-xl font-bold">历史记录</h3>
+              <p class="text-slate-500 mt-2">这里的每条记录都会参与 AI 自动复盘和下一次训练建议。</p>
+            </div>
+            <button id="export-data-btn" class="btn-secondary">导出 JSON</button>
+          </div>
+          <div id="history-list" class="space-y-3 mt-6"></div>
+        </div>
+      </section>
+
+      <section id="ai-chat" class="page-section space-y-6">
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button class="quick-chip quick-question-btn" data-question="帮我重排本周训练计划">重排本周计划</button>
+            <button class="quick-chip quick-question-btn" data-question="替换今天训练中的动作，保持同样训练目标">替换今天动作</button>
+            <button class="quick-chip quick-question-btn" data-question="根据我的历史数据，给我下一次训练的重量和次数建议">下次重量建议</button>
+            <button class="quick-chip quick-question-btn" data-question="推荐新的自定义动作并加入我的计划">推荐新动作</button>
+          </div>
+          <div id="chat-messages" class="bg-slate-50 rounded-3xl p-4 min-h-[380px] max-h-[560px] overflow-y-auto">
+            <div class="chat-message ai">
+              <p>我是你的 AI 教练。你可以直接让我重做整周计划、替换今日动作、推荐自定义动作，或者根据历史记录给你下一次重量和次数建议。</p>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-4">
+            <input id="chat-input" type="text" class="flex-1 rounded-2xl border border-slate-200 px-4 py-3" placeholder="例如：把周三肩部训练换成更适合家里器材的版本">
+            <button id="send-chat-btn" class="btn-primary">发送</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercises" class="page-section space-y-6">
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 class="text-xl font-bold">动作教程库</h3>
+              <p class="text-slate-500 mt-2">支持自定义动作、B 站原视频和搜索兜底。</p>
+            </div>
+            <button id="add-custom-exercise-btn" class="btn-secondary">添加自定义动作</button>
+          </div>
+          <input id="exercise-search" class="w-full mt-5 rounded-2xl border border-slate-200 px-4 py-3" placeholder="搜索动作、部位或器材">
+          <div id="exercise-library" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-6"></div>
+        </div>
+      </section>
+
+      <section id="profile" class="page-section space-y-6">
+        <div class="bg-white rounded-3xl p-6 card-shadow">
+          <h3 class="text-xl font-bold">AI 档案与接口设置</h3>
+          <p class="text-slate-500 mt-2">这里的档案会直接影响 AI 总结、重量建议、动作替换和计划推进。</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <label><span class="text-sm text-slate-500">昵称</span><input id="profile-name" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+            <label><span class="text-sm text-slate-500">目标</span><input id="profile-goal" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+            <label><span class="text-sm text-slate-500">训练经验</span><input id="profile-experience" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+            <label><span class="text-sm text-slate-500">每周训练天数</span><input id="profile-days" type="number" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+            <label><span class="text-sm text-slate-500">每次训练分钟</span><input id="profile-minutes" type="number" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+            <label><span class="text-sm text-slate-500">优先强化部位</span><input id="profile-focus" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+          </div>
+          <label class="block mt-4"><span class="text-sm text-slate-500">器材配置</span><textarea id="profile-equipment" rows="4" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3"></textarea></label>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <label><span class="text-sm text-slate-500">AI Endpoint</span><input id="api-endpoint" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+            <label><span class="text-sm text-slate-500">AI Key</span><input id="api-key" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+            <label><span class="text-sm text-slate-500">模型</span><input id="api-model" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+          </div>
+          <div class="flex flex-wrap gap-3 mt-5">
+            <button id="save-profile-btn" class="btn-primary">保存档案</button>
+            <button id="generate-diet-btn" class="btn-secondary">AI 饮食建议</button>
+          </div>
+          <div id="diet-box" class="mt-5 rounded-2xl bg-light p-4 leading-7 text-slate-700">保存档案后，AI 可以根据目标和器材配置生成饮食建议。</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="exercise-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p id="exercise-modal-group" class="text-sm text-slate-500"></p>
+          <h3 id="exercise-modal-title" class="text-2xl font-bold mt-1"></h3>
+        </div>
+        <button class="btn-secondary" onclick="closeModal('exercise-modal')">关闭</button>
+      </div>
+      <div class="rounded-3xl overflow-hidden mt-5 border border-slate-100 bg-slate-100 aspect-video">
+        <iframe id="exercise-modal-player" title="exercise-video" class="w-full h-full" allowfullscreen></iframe>
+      </div>
+      <div class="flex flex-wrap gap-3 mt-4">
+        <a id="exercise-modal-link" target="_blank" rel="noreferrer" class="btn-secondary inline-block">打开原视频</a>
+        <a id="exercise-modal-search" target="_blank" rel="noreferrer" class="btn-secondary inline-block">B 站搜索同动作</a>
+        <button id="exercise-modal-record" class="btn-primary">记录这个动作</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6 mt-6">
+        <div>
+          <h4 class="font-bold text-lg mb-3">动作要领</h4>
+          <ul id="exercise-modal-description" class="list-disc pl-5 text-slate-600 leading-8"></ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-lg mb-3">注意事项</h4>
+          <ul id="exercise-modal-tips" class="list-disc pl-5 text-slate-600 leading-8"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="record-modal" class="modal-overlay">
+    <div class="modal-content max-w-2xl">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-sm text-slate-500">记录训练</p>
+          <h3 class="text-2xl font-bold mt-1">保存并让 AI 复盘</h3>
+        </div>
+        <button class="btn-secondary" onclick="closeModal('record-modal')">关闭</button>
+      </div>
+      <form id="record-form" class="grid md:grid-cols-2 gap-4 mt-6">
+        <label><span class="text-sm text-slate-500">动作</span><input id="record-exercise-name" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+        <label><span class="text-sm text-slate-500">日期</span><input id="record-date" type="date" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+        <label><span class="text-sm text-slate-500">重量 (kg)</span><input id="record-weight" type="number" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+        <label><span class="text-sm text-slate-500">组数</span><input id="record-sets" type="number" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+        <label class="md:col-span-2"><span class="text-sm text-slate-500">次数</span><input id="record-reps" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3"></label>
+        <label class="md:col-span-2"><span class="text-sm text-slate-500">备注</span><textarea id="record-notes" rows="4" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3"></textarea></label>
+        <div class="md:col-span-2 flex gap-3">
+          <button type="submit" class="btn-primary">保存记录</button>
+          <button type="button" class="btn-secondary" onclick="closeModal('record-modal')">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const DAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const STORAGE_KEY = "fit-ai-html-v3";
+    const DEFAULT_API = {
+      endpoint: "https://api.866646.xyz/v1/chat/completions",
+      key: "sk-UCflz2oogChepXfifL2h8LBLtf5nQzwgLCVtgX4P5YcWM5UE",
+      model: "doubao-seed-2.0-pro"
+    };
+    const DEFAULT_PROFILE = {
+      name: "本机训练者",
+      goal: "增肌",
+      experience: "初中级",
+      daysPerWeek: 5,
+      dailyMinutes: 45,
+      focusAreas: "上胸、背阔、肩后束",
+      equipmentText: "可调卧推凳\\n卧推架\\n单杠\\n龙门架\\n20kg 哑铃 × 2\\n7kg 哑铃 × 2\\n杠铃片若干"
+    };
+    const DEFAULT_PLAN = {
+      0: { title: "周日 · 主动恢复", duration: "20 分钟", focus: "步行 + 拉伸 + 轻活动", exercises: [] },
+      1: { title: "周一 · 胸部专项", duration: "45 分钟", focus: "胸部主项推进", exercises: ["平板哑铃卧推", "上斜哑铃卧推", "平板哑铃飞鸟"] },
+      2: { title: "周二 · 背部专项", duration: "45 分钟", focus: "背阔 + 中背厚度", exercises: ["标准引体向上", "高位下拉", "单臂哑铃划船"] },
+      3: { title: "周三 · 肩部控制", duration: "35 分钟", focus: "中束 + 后束", exercises: ["坐姿哑铃肩推", "哑铃侧平举", "俯身哑铃飞鸟"] },
+      4: { title: "周四 · 手臂塑形", duration: "35 分钟", focus: "肱二头 + 肱三头", exercises: ["哑铃交替弯举", "锤式弯举", "绳索下压"] },
+      5: { title: "周五 · 胸背强化", duration: "45 分钟", focus: "复合动作推进 + 总量补齐", exercises: ["平板哑铃卧推", "标准引体向上", "高位下拉"] },
+      6: { title: "周六 · 弱项补强", duration: "40 分钟", focus: "弱项 + 泵感补充", exercises: ["上斜哑铃卧推", "单臂哑铃划船", "哑铃侧平举"] }
+    };
+    const DEFAULT_EXERCISES = [
+      { name: "平板哑铃卧推", muscleGroup: "胸部", targetMuscles: ["胸大肌", "前三角", "肱三头"], equipment: "卧推凳 + 哑铃", recommendedWeight: "20kg/手", defaultSets: 4, defaultReps: "8-12", bvid: "BV1mD421J7o3", description: ["肩胛骨先收紧下沉，再开始推举。", "下放时手肘略低于肩线，避免耸肩。", "推起时让胸部主动发力，不要全程只靠手臂。"], tips: ["底部短暂停顿半秒更容易稳定轨迹。", "最后一组最多只保留 0-1 次余力。"] },
+      { name: "上斜哑铃卧推", muscleGroup: "胸部", targetMuscles: ["上胸", "前三角", "肱三头"], equipment: "上斜卧推凳 + 哑铃", recommendedWeight: "16kg/手", defaultSets: 4, defaultReps: "8-12", bvid: "BV1nNZRY3EJc", description: ["上斜角度控制在 20-35 度，更容易打到上胸。", "下放时小臂尽量保持垂直地面。", "全程保持胸骨上提，减少肩前侧顶压。"], tips: ["如果肩前侧紧，就先减角度再减重量。"] },
+      { name: "平板哑铃飞鸟", muscleGroup: "胸部", targetMuscles: ["胸大肌", "胸部拉伸位控制"], equipment: "卧推凳 + 哑铃", recommendedWeight: "8-10kg/手", defaultSets: 3, defaultReps: "12-15", bvid: "BV1V24y167jv", description: ["动作轨迹像抱树，不要做成推举。", "底部感受胸肌拉伸，肘关节保持微屈。", "上举只做到胸部持续受力的位置。"], tips: ["飞鸟更偏拉伸刺激，重量不需要贪大。"] },
+      { name: "标准引体向上", muscleGroup: "背部", targetMuscles: ["背阔肌", "大圆肌", "肱二头", "核心"], equipment: "单杠", recommendedWeight: "自重", defaultSets: 4, defaultReps: "6-10", bvid: "BV1bq4y1L77y", description: ["起始先沉肩，再向上拉起身体。", "胸口主动找向单杠，而不是只用手臂拉。", "离心下放阶段保持控制，不要整段掉下去。"], tips: ["做不到标准次数时，可以先做离心控制。"] },
+      { name: "高位下拉", muscleGroup: "背部", targetMuscles: ["背阔肌", "中下斜方", "肱二头"], equipment: "龙门架 / 高位下拉器", recommendedWeight: "30-40kg", defaultSets: 4, defaultReps: "8-12", bvid: "BV1oa4y1z73J", description: ["胸口上提，横杆拉向锁骨到上胸区域。", "肘部向下向后，不要只把手往下拽。", "动作底部短暂停顿再回放。"], tips: ["如果总是手酸，先降低重量，把肘路径做对。"] },
+      { name: "单臂哑铃划船", muscleGroup: "背部", targetMuscles: ["背阔肌", "菱形肌", "后三角"], equipment: "卧推凳 + 哑铃", recommendedWeight: "18-22kg", defaultSets: 4, defaultReps: "10-12", bvid: "BV1Vh411775b", description: ["支撑侧身体稳定，拉起时手肘贴近身体。", "想象用肘带动，而不是甩腰借力。", "顶峰收缩时停半秒。"], tips: ["同侧腰紧时先减重，并缩小摆动。"] },
+      { name: "坐姿哑铃肩推", muscleGroup: "肩部", targetMuscles: ["前三角", "中束", "肱三头"], equipment: "靠背凳 + 哑铃", recommendedWeight: "10-12kg/手", defaultSets: 4, defaultReps: "8-10", bvid: "BV1uw411N7MC", description: ["颈部和上背贴稳靠背，核心保持收紧。", "推起时避免耸肩，手肘自然向前。", "下放到耳朵附近即可。"], tips: ["肩推动作优先稳定，不要过度追求极限重量。"] },
+      { name: "哑铃侧平举", muscleGroup: "肩部", targetMuscles: ["三角肌中束"], equipment: "哑铃", recommendedWeight: "5-7kg/手", defaultSets: 4, defaultReps: "12-15", bvid: "BV18o4y147RH", description: ["手肘微屈，用肘带动手抬起。", "只抬到与肩同高附近即可。", "全程避免借腰和摆动。"], tips: ["次数比重量更重要，目标是中束持续灼烧。"] },
+      { name: "俯身哑铃飞鸟", muscleGroup: "肩部", targetMuscles: ["后三角", "中下斜方"], equipment: "哑铃", recommendedWeight: "4-6kg/手", defaultSets: 3, defaultReps: "12-15", bvid: "BV1Sy421i79H", description: ["上身前倾稳定后，双臂向两侧打开。", "顶峰位置刻意感受后三角收缩。", "不要把动作做成耸肩。"], tips: ["如果斜方代偿过多，可以减重做慢一点。"] },
+      { name: "哑铃交替弯举", muscleGroup: "手臂", targetMuscles: ["肱二头", "肱肌"], equipment: "哑铃", recommendedWeight: "8-10kg/手", defaultSets: 4, defaultReps: "10-12/侧", bvid: "BV1bRDgYCEgm", description: ["手肘贴近身体两侧，前臂旋后发力。", "顶峰位置短暂停顿，控制下放。", "避免借腰和身体晃动。"], tips: ["二头训练通过更慢离心能显著提升质量。"] },
+      { name: "锤式弯举", muscleGroup: "手臂", targetMuscles: ["肱肌", "肱桡肌", "肱二头"], equipment: "哑铃", recommendedWeight: "8-10kg/手", defaultSets: 3, defaultReps: "10-12/侧", bvid: "BV1iJ411U72E", description: ["掌心相对，手腕保持中立。", "上举路线贴近身体。", "底部完全控制后再回放。"], tips: ["非常适合提升手臂厚度和前臂力量。"] },
+      { name: "绳索下压", muscleGroup: "手臂", targetMuscles: ["肱三头"], equipment: "龙门架", recommendedWeight: "12-18kg", defaultSets: 4, defaultReps: "12-15", bvid: "BV1fjMyzZEt5", description: ["手肘夹紧身体两侧，避免前后晃动。", "下压到底时完全伸展肘关节。", "回放时只让前臂上来，不要抬肩。"], tips: ["肱三头训练更吃轨迹，别用身体往下砸。"] }
+    ];
+
+    const AppState = loadState();
+    let progressChart = null;
+    let activeChatPayload = null;
+
+    function loadState() {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return {
+        currentPage: "dashboard",
+        profile: { ...DEFAULT_PROFILE, ...(saved.profile || {}) },
+        api: { ...DEFAULT_API, ...(saved.api || {}) },
+        readiness: { sleep: 3, energy: 3, soreness: 3, stress: 3, ...(saved.readiness || {}) },
+        plan: saved.plan || structuredClone(DEFAULT_PLAN),
+        records: saved.records || [],
+        exercises: saved.exercises || DEFAULT_EXERCISES,
+        ai: saved.ai || {
+          summary: "完成一次训练后，AI 会开始建立长期记忆与进阶建议。",
+          weeklyFocus: "优先建立稳定记录习惯。",
+          todayDecision: "先从今天的主项动作开始，保证动作标准。",
+          nextSessionTarget: "完成 1 次完整训练记录后，AI 会生成更具体目标。",
+          riskAlert: "暂未识别到特殊风险。",
+          planSummary: "当前使用默认微周期，等待 AI 根据历史主动接管。",
+          recovery: "先记录训练，系统才能形成真正的闭环。",
+          prTargets: [],
+          replacements: [],
+          memory: []
+        }
+      };
+    }
+
+    function persistState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        profile: AppState.profile,
+        api: AppState.api,
+        readiness: AppState.readiness,
+        plan: AppState.plan,
+        records: AppState.records,
+        exercises: AppState.exercises,
+        ai: AppState.ai
+      }));
+    }
+
+    function formatDate(date = new Date()) {
+      return new Intl.DateTimeFormat("zh-CN", { dateStyle: "full" }).format(date);
+    }
+
+    function localDateValue(date = new Date()) {
+      return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    }
+
+    function todayIndex() {
+      return new Date().getDay();
+    }
+
+    function currentWeekKey() {
+      const now = new Date();
+      const first = new Date(now.getFullYear(), 0, 1);
+      const days = Math.floor((now - first) / 86400000);
+      return `${now.getFullYear()}-W${Math.ceil((days + first.getDay() + 1) / 7)}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    }
+
+    function notify(message) {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2600);
+    }
+
+    function playerUrl(exercise) {
+      return exercise?.bvid ? `https://player.bilibili.com/player.html?bvid=${exercise.bvid}&page=1&high_quality=1&danmaku=0` : "about:blank";
+    }
+
+    function videoUrl(exercise) {
+      return exercise?.bvid ? `https://www.bilibili.com/video/${exercise.bvid}/` : "#";
+    }
+
+    function getExercise(name) {
+      return AppState.exercises.find((item) => item.name === name);
+    }
+
+    function getTodayPlan() {
+      return AppState.plan[todayIndex()] || { title: "今日训练", duration: "-", focus: "等待 AI 生成", exercises: [] };
+    }
+
+    function getStats() {
+      const dates = [...new Set(AppState.records.map((item) => item.date))];
+      const maxWeight = AppState.records.reduce((max, item) => Math.max(max, Number(item.weight) || 0), 0);
+      const totalVolume = AppState.records.reduce((sum, item) => sum + ((Number(item.weight) || 0) * (Number(item.sets) || 0) * (parseInt(item.reps, 10) || 0)), 0);
+      const weekCount = AppState.records.filter((item) => item.weekKey === currentWeekKey()).length;
+      return { totalDays: dates.length, weekCount, maxWeight, totalVolume };
+    }
+
+    function fillReadinessSelects() {
+      ["sleep", "energy", "soreness", "stress"].forEach((key) => {
+        const select = document.getElementById(`readiness-${key}`);
+        select.innerHTML = [1, 2, 3, 4, 5].map((value) => `<option value="${value}">${value}</option>`).join("");
+        select.value = AppState.readiness[key];
+        select.addEventListener("change", () => {
+          AppState.readiness[key] = Number(select.value);
+          persistState();
+        });
+      });
+    }
+
+    function switchPage(pageName) {
+      AppState.currentPage = pageName;
+      document.querySelectorAll(".page-section").forEach((section) => section.classList.remove("active"));
+      document.getElementById(pageName)?.classList.add("active");
+      document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.page === pageName));
+      document.querySelectorAll(".mobile-nav-btn").forEach((btn) => {
+        btn.classList.toggle("text-primary", btn.dataset.page === pageName);
+        btn.classList.toggle("text-slate-500", btn.dataset.page !== pageName);
+      });
+      const titles = {
+        dashboard: "数据仪表盘",
+        training: "今日训练",
+        plan: "周训练计划",
+        history: "历史记录",
+        "ai-chat": "AI 对话",
+        exercises: "动作教程",
+        profile: "AI 档案"
+      };
+      document.getElementById("page-title").textContent = titles[pageName] || "AI 智能健身教练";
+      renderPageSpecific(pageName);
+    }
+
+    function renderPageSpecific(pageName) {
+      if (pageName === "training") renderTrainingPage();
+      if (pageName === "plan") renderPlanPage();
+      if (pageName === "history") renderHistory();
+      if (pageName === "exercises") renderExercises();
+      if (pageName === "profile") renderProfile();
+    }
+
+    function renderDashboard() {
+      const stats = getStats();
+      document.getElementById("stat-total-days").textContent = stats.totalDays;
+      document.getElementById("stat-week-count").textContent = stats.weekCount;
+      document.getElementById("stat-max-weight").textContent = stats.maxWeight;
+      document.getElementById("stat-total-volume").textContent = Math.round(stats.totalVolume);
+      document.getElementById("stat-completion").textContent = `${Math.min(100, Math.round((stats.weekCount / Math.max(1, AppState.profile.daysPerWeek)) * 100))}%`;
+      document.getElementById("stat-streak").textContent = stats.totalDays;
+      document.getElementById("stat-next-focus").textContent = AppState.ai.nextSessionTarget || "等待 AI 生成";
+      document.getElementById("today-day-label").textContent = DAYS[todayIndex()];
+
+      const plan = getTodayPlan();
+      document.getElementById("today-training-preview").innerHTML = (plan.exercises.length ? plan.exercises : ["今天安排主动恢复"]).map((name) => `
+        <div class="rounded-2xl border border-slate-100 p-4">
+          <p class="font-semibold">${escapeHtml(name)}</p>
+          <p class="text-sm text-slate-500 mt-1">${escapeHtml(plan.focus)}</p>
+        </div>
+      `).join("");
+
+      document.getElementById("ai-control-panel").innerHTML = [
+        ["本周重点", AppState.ai.weeklyFocus],
+        ["今日决策", AppState.ai.todayDecision],
+        ["恢复提醒", AppState.ai.recovery],
+        ["风险提醒", AppState.ai.riskAlert]
+      ].map(([title, body]) => `
+        <div class="rounded-2xl bg-white/12 backdrop-blur p-4">
+          <p class="text-white/70 text-sm">${escapeHtml(title)}</p>
+          <p class="font-semibold mt-2 leading-7">${escapeHtml(body || "等待 AI 生成")}</p>
+        </div>
+      `).join("");
+
+      document.getElementById("recent-records-list").innerHTML = AppState.records.length ? AppState.records.slice(-6).reverse().map((item) => `
+        <div class="rounded-2xl border border-slate-100 p-4">
+          <div class="flex justify-between gap-3">
+            <div>
+              <p class="font-semibold">${escapeHtml(item.exerciseName)}</p>
+              <p class="text-sm text-slate-500 mt-1">${escapeHtml(item.date)} · ${DAYS[item.dayOfWeek]}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold text-primary">${escapeHtml(item.weight)}kg</p>
+              <p class="text-sm text-slate-500">${escapeHtml(item.sets)} 组 · ${escapeHtml(item.reps)}</p>
+            </div>
+          </div>
+        </div>
+      `).join("") : `<p class="text-slate-400 text-center py-10">还没有训练记录</p>`;
+
+      renderChart(8);
+    }
+
+    function renderChart(limit) {
+      const items = AppState.records.slice(-limit);
+      const labels = items.map((item, index) => `${index + 1}`);
+      const values = items.map((item) => Number(item.weight) || 0);
+      const canvas = document.getElementById("progress-chart");
+      if (progressChart) progressChart.destroy();
+      progressChart = new Chart(canvas, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "训练重量",
+            data: values,
+            borderColor: "#165DFF",
+            backgroundColor: "rgba(22,93,255,.12)",
+            fill: true,
+            tension: 0.35
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderTrainingPage() {
+      const plan = getTodayPlan();
+      document.getElementById("training-plan-title").textContent = plan.title;
+      document.getElementById("training-plan-focus").textContent = `${plan.focus} · 预计 ${plan.duration}`;
+      document.getElementById("daily-ai-briefing").textContent = AppState.ai.todayDecision || "等待 AI 读取你的今日状态。";
+      document.getElementById("today-workout-list").innerHTML = (plan.exercises.length ? plan.exercises : ["主动恢复"]).map((name) => {
+        const exercise = getExercise(name);
+        const last = [...AppState.records].reverse().find((item) => item.exerciseName === name);
+        return `
+          <div class="rounded-3xl border border-slate-100 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 card-hover">
+            <div>
+              <p class="text-lg font-bold">${escapeHtml(name)}</p>
+              <p class="text-slate-500 mt-1">${escapeHtml(exercise?.muscleGroup || "恢复")} · ${escapeHtml(exercise?.equipment || "无需器材")}</p>
+              <p class="text-sm text-slate-400 mt-2">上次记录：${last ? `${last.weight}kg · ${last.sets} 组 · ${last.reps}` : "暂无"}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn-secondary" onclick="openExerciseModal('${escapeHtml(name)}')">看动作</button>
+              <button class="btn-primary" onclick="openRecordModal('${escapeHtml(name)}')">记录</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderPlanPage(activeDay = todayIndex()) {
+      const tabs = document.getElementById("plan-day-tabs");
+      tabs.innerHTML = DAYS.map((label, day) => `
+        <button class="${day === activeDay ? "btn-primary" : "btn-secondary"}" onclick="renderPlanPage(${day})">${label}</button>
+      `).join("");
+      const detail = AppState.plan[activeDay];
+      document.getElementById("plan-day-detail").innerHTML = `
+        <div class="rounded-3xl border border-slate-100 p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h4 class="text-xl font-bold">${escapeHtml(detail.title)}</h4>
+              <p class="text-slate-500 mt-2">${escapeHtml(detail.focus)} · ${escapeHtml(detail.duration)}</p>
+            </div>
+            <button class="btn-secondary" onclick="requestDayReplacement(${activeDay})">AI 替换这一天</button>
+          </div>
+          <div class="space-y-3 mt-6">
+            ${detail.exercises.length ? detail.exercises.map((name) => `<div class="rounded-2xl bg-slate-50 p-4 font-medium">${escapeHtml(name)}</div>`).join("") : '<div class="rounded-2xl bg-slate-50 p-4 text-slate-500">主动恢复日</div>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHistory() {
+      document.getElementById("history-list").innerHTML = AppState.records.length ? [...AppState.records].reverse().map((item) => `
+        <div class="rounded-2xl border border-slate-100 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <p class="font-semibold">${escapeHtml(item.exerciseName)}</p>
+            <p class="text-sm text-slate-500 mt-1">${escapeHtml(item.date)} · ${DAYS[item.dayOfWeek]}</p>
+          </div>
+          <div class="text-sm text-slate-600">${escapeHtml(item.weight)}kg · ${escapeHtml(item.sets)} 组 · ${escapeHtml(item.reps)}</div>
+        </div>
+      `).join("") : '<p class="text-slate-400 text-center py-10">还没有历史记录</p>';
+    }
+
+    function renderExercises() {
+      const keyword = (document.getElementById("exercise-search").value || "").trim().toLowerCase();
+      const list = AppState.exercises.filter((item) => !keyword || item.name.toLowerCase().includes(keyword) || item.muscleGroup.toLowerCase().includes(keyword) || item.equipment.toLowerCase().includes(keyword));
+      document.getElementById("exercise-library").innerHTML = list.map((item) => `
+        <div class="bg-white rounded-3xl p-5 border border-slate-100 card-hover">
+          <p class="text-sm text-slate-500">${escapeHtml(item.muscleGroup)}</p>
+          <h4 class="text-lg font-bold mt-2">${escapeHtml(item.name)}</h4>
+          <p class="text-slate-500 mt-2 text-sm">${escapeHtml(item.targetMuscles.join(" · "))}</p>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <button class="btn-secondary" onclick="openExerciseModal('${escapeHtml(item.name)}')">看视频</button>
+            <button class="btn-primary" onclick="openRecordModal('${escapeHtml(item.name)}')">记录</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderProfile() {
+      document.getElementById("profile-name").value = AppState.profile.name;
+      document.getElementById("profile-goal").value = AppState.profile.goal;
+      document.getElementById("profile-experience").value = AppState.profile.experience;
+      document.getElementById("profile-days").value = AppState.profile.daysPerWeek;
+      document.getElementById("profile-minutes").value = AppState.profile.dailyMinutes;
+      document.getElementById("profile-focus").value = AppState.profile.focusAreas;
+      document.getElementById("profile-equipment").value = AppState.profile.equipmentText;
+      document.getElementById("api-endpoint").value = AppState.api.endpoint;
+      document.getElementById("api-key").value = AppState.api.key;
+      document.getElementById("api-model").value = AppState.api.model;
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add("active");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+
+    function openExerciseModal(name) {
+      const exercise = getExercise(name);
+      if (!exercise) return;
+      document.getElementById("exercise-modal-group").textContent = exercise.muscleGroup;
+      document.getElementById("exercise-modal-title").textContent = exercise.name;
+      document.getElementById("exercise-modal-player").src = playerUrl(exercise);
+      document.getElementById("exercise-modal-link").href = videoUrl(exercise);
+      document.getElementById("exercise-modal-search").href = `https://search.bilibili.com/all?keyword=${encodeURIComponent(exercise.name)}`;
+      document.getElementById("exercise-modal-description").innerHTML = exercise.description.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+      document.getElementById("exercise-modal-tips").innerHTML = exercise.tips.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+      document.getElementById("exercise-modal-record").onclick = () => {
+        closeModal("exercise-modal");
+        openRecordModal(exercise.name);
+      };
+      openModal("exercise-modal");
+    }
+
+    function openRecordModal(name = "") {
+      const exercise = getExercise(name);
+      document.getElementById("record-exercise-name").value = name;
+      document.getElementById("record-date").value = localDateValue();
+      document.getElementById("record-weight").value = exercise?.recommendedWeight?.replace(/[^\d.]/g, "") || "";
+      document.getElementById("record-sets").value = exercise?.defaultSets || 3;
+      document.getElementById("record-reps").value = exercise?.defaultReps || "10-12";
+      document.getElementById("record-notes").value = "";
+      openModal("record-modal");
+    }
+
+    function collectAIContext() {
+      return {
+        profile: AppState.profile,
+        readiness: AppState.readiness,
+        plan: AppState.plan,
+        recentRecords: AppState.records.slice(-20),
+        aiMemory: AppState.ai.memory.slice(-10),
+        exerciseCatalog: AppState.exercises.slice(0, 30)
+      };
+    }
+
+    async function callAIJson(userPrompt, schemaHint) {
+      const system = [
+        "你是专业中文 AI 健身教练。",
+        "你要根据用户的训练历史、计划、恢复状态和器材，给出可执行建议。",
+        "你返回的 JSON 必须合法。",
+        schemaHint
+      ].join("\\n");
+
+      const response = await fetch(AppState.api.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${AppState.api.key}`
+        },
+        body: JSON.stringify({
+          model: AppState.api.model,
+          temperature: 0.35,
+          max_tokens: 1800,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: `${userPrompt}\\n\\n上下文：${JSON.stringify(collectAIContext())}\\n\\n请只返回 JSON。` }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`AI 请求失败，HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data?.choices?.[0]?.message?.content || "";
+      const fenced = text.match(/```json\s*([\s\S]*?)```/i) || text.match(/```\s*([\s\S]*?)```/i);
+      const raw = fenced ? fenced[1] : text;
+      const start = Math.min(...["{", "["].map((char) => {
+        const index = raw.indexOf(char);
+        return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+      }));
+      const normalized = start === Number.MAX_SAFE_INTEGER ? raw.trim() : raw.slice(start).trim();
+      return JSON.parse(normalized);
+    }
+
+    async function refreshAIControl() {
+      document.getElementById("refresh-ai-btn").disabled = true;
+      try {
+        const result = await callAIJson(
+          "请根据上下文生成当前总控结论，包括周重点、今日决策、恢复提醒、风险提醒、下一次目标、3条PR目标、2条动作替换建议和1条长期记忆。",
+          "返回格式：{summary,weeklyFocus,todayDecision,recovery,riskAlert,nextSessionTarget,planSummary,prTargets:[{exercise,target,reason}],replacements:[{source,replacement,reason}],memory:[string]}"
+        );
+        AppState.ai.summary = result.summary || AppState.ai.summary;
+        AppState.ai.weeklyFocus = result.weeklyFocus || AppState.ai.weeklyFocus;
+        AppState.ai.todayDecision = result.todayDecision || AppState.ai.todayDecision;
+        AppState.ai.recovery = result.recovery || AppState.ai.recovery;
+        AppState.ai.riskAlert = result.riskAlert || AppState.ai.riskAlert;
+        AppState.ai.nextSessionTarget = result.nextSessionTarget || AppState.ai.nextSessionTarget;
+        AppState.ai.planSummary = result.planSummary || AppState.ai.planSummary;
+        AppState.ai.prTargets = Array.isArray(result.prTargets) ? result.prTargets : [];
+        AppState.ai.replacements = Array.isArray(result.replacements) ? result.replacements : [];
+        if (Array.isArray(result.memory)) {
+          const time = new Date().toLocaleString("zh-CN");
+          result.memory.forEach((entry) => AppState.ai.memory.push({ time, content: entry }));
+          AppState.ai.memory = AppState.ai.memory.slice(-20);
+        }
+        persistState();
+        renderDashboard();
+        renderTrainingPage();
+        notify("AI 总控已刷新");
+      } catch (error) {
+        notify(error.message);
+      } finally {
+        document.getElementById("refresh-ai-btn").disabled = false;
+      }
+    }
+
+    async function finishWorkoutAndSummarize() {
+      if (!AppState.records.length) {
+        notify("请先至少记录一个训练动作");
+        return;
+      }
+      try {
+        const result = await callAIJson(
+          "请根据最近训练，生成一次训练复盘、下一次重量次数建议，以及是否需要替换动作。",
+          "返回格式：{summary,nextSessionTarget,weeklyFocus,recovery,riskAlert,planSummary}"
+        );
+        AppState.ai.summary = result.summary || AppState.ai.summary;
+        AppState.ai.nextSessionTarget = result.nextSessionTarget || AppState.ai.nextSessionTarget;
+        AppState.ai.weeklyFocus = result.weeklyFocus || AppState.ai.weeklyFocus;
+        AppState.ai.recovery = result.recovery || AppState.ai.recovery;
+        AppState.ai.riskAlert = result.riskAlert || AppState.ai.riskAlert;
+        AppState.ai.planSummary = result.planSummary || AppState.ai.planSummary;
+        AppState.ai.memory.push({ time: new Date().toLocaleString("zh-CN"), content: AppState.ai.summary });
+        AppState.ai.memory = AppState.ai.memory.slice(-20);
+        persistState();
+        renderDashboard();
+        notify("AI 已完成训练复盘");
+      } catch (error) {
+        notify(error.message);
+      }
+    }
+
+    async function runDailyAdjustment() {
+      try {
+        const result = await callAIJson(
+          "请根据今天的恢复状态和计划，给出今天训练前的动态建议。",
+          "返回格式：{briefing}"
+        );
+        document.getElementById("daily-ai-briefing").textContent = result.briefing || "AI 暂时没有新的微调建议。";
+        notify("AI 微调已生成");
+      } catch (error) {
+        notify(error.message);
+      }
+    }
+
+    async function regeneratePlanWithAI() {
+      const button = document.getElementById("regenerate-plan-btn");
+      button.disabled = true;
+      try {
+        const result = await callAIJson(
+          "请生成一个新的 7 天训练计划，必须结合用户器材、目标和历史记录，保持胸背肩手臂逻辑清晰。",
+          "返回格式：{\"0\":{title,duration,focus,exercises:[]},\"1\":{...},...\"6\":{...}}"
+        );
+        for (const key of Object.keys(DEFAULT_PLAN)) {
+          if (result[key]) AppState.plan[key] = result[key];
+        }
+        persistState();
+        renderTrainingPage();
+        renderPlanPage();
+        notify("AI 已重做本周计划");
+      } catch (error) {
+        notify(error.message);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function requestDayReplacement(day) {
+      try {
+        const result = await callAIJson(
+          `请只替换周计划中第 ${day} 天的安排，保持总体目标一致，但更适合当前器材和恢复状态。`,
+          "返回格式：{title,duration,focus,exercises:[...]}"
+        );
+        AppState.plan[day] = result;
+        persistState();
+        renderPlanPage(day);
+        if (day === todayIndex()) renderTrainingPage();
+        notify("AI 已替换这一天的计划");
+      } catch (error) {
+        notify(error.message);
+      }
+    }
+
+    function renderChatActions(payload) {
+      const actions = [];
+      if (payload.suggestedWeekPlan) actions.push(`<button class="action-chip chat-action-btn" data-action="week">一键替换整周计划</button>`);
+      if (payload.suggestedTodayPlan) actions.push(`<button class="action-chip chat-action-btn" data-action="today">一键替换今天计划</button>`);
+      if (payload.suggestedExercises?.length) actions.push(`<button class="action-chip chat-action-btn" data-action="exercise">加入自定义动作库</button>`);
+      return actions.length ? `<div class="flex flex-wrap gap-2 mt-4">${actions.join("")}</div>` : "";
+    }
+
+    async function applyChatSuggestion(action) {
+      if (!activeChatPayload) return;
+      if (action === "week" && activeChatPayload.suggestedWeekPlan) {
+        AppState.plan = { ...AppState.plan, ...activeChatPayload.suggestedWeekPlan };
+        persistState();
+        renderTrainingPage();
+        renderPlanPage();
+        notify("AI 建议已替换整周计划");
+      }
+      if (action === "today" && activeChatPayload.suggestedTodayPlan) {
+        AppState.plan[todayIndex()] = activeChatPayload.suggestedTodayPlan;
+        persistState();
+        renderTrainingPage();
+        renderPlanPage(todayIndex());
+        notify("AI 建议已替换今日训练");
+      }
+      if (action === "exercise" && activeChatPayload.suggestedExercises?.length) {
+        activeChatPayload.suggestedExercises.forEach((item) => {
+          if (!AppState.exercises.find((exercise) => exercise.name === item.name)) AppState.exercises.push(item);
+        });
+        persistState();
+        renderExercises();
+        notify("AI 推荐动作已加入动作库");
+      }
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chat-input");
+      const message = input.value.trim();
+      if (!message) return;
+      const chat = document.getElementById("chat-messages");
+      chat.insertAdjacentHTML("beforeend", `<div class="chat-message user"><p>${escapeHtml(message)}</p></div>`);
+      input.value = "";
+      const thinking = document.createElement("div");
+      thinking.className = "chat-message ai";
+      thinking.id = "thinking";
+      thinking.innerHTML = `<div class="typing flex gap-1"><span class="w-2 h-2 bg-slate-400 rounded-full"></span><span class="w-2 h-2 bg-slate-400 rounded-full"></span><span class="w-2 h-2 bg-slate-400 rounded-full"></span></div>`;
+      chat.appendChild(thinking);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const payload = await callAIJson(
+          `用户消息：${message}。请像真正的健身教练一样回答，并在需要时给出可直接写回系统的建议。`,
+          "返回格式：{answer,suggestedWeekPlan?:object,suggestedTodayPlan?:object,suggestedExercises?:array}"
+        );
+        activeChatPayload = payload;
+        thinking.remove();
+        const wrapper = document.createElement("div");
+        wrapper.className = "chat-message ai";
+        wrapper.innerHTML = `<p style="white-space:pre-line">${escapeHtml(payload.answer || "AI 已处理完成。")}</p>${renderChatActions(payload)}`;
+        wrapper.querySelectorAll(".chat-action-btn").forEach((button) => {
+          button.addEventListener("click", () => applyChatSuggestion(button.dataset.action));
+        });
+        chat.appendChild(wrapper);
+      } catch (error) {
+        thinking.remove();
+        chat.insertAdjacentHTML("beforeend", `<div class="chat-message ai"><p>${escapeHtml(error.message)}</p></div>`);
+      }
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function generateDietAdvice() {
+      try {
+        const payload = await callAIJson(
+          "请根据用户的目标、训练频率和器材环境，生成简单可执行的饮食建议。",
+          "返回格式：{advice}"
+        );
+        document.getElementById("diet-box").textContent = payload.advice || "AI 暂时没有新的饮食建议。";
+      } catch (error) {
+        document.getElementById("diet-box").textContent = error.message;
+      }
+    }
+
+    function saveProfile() {
+      AppState.profile.name = document.getElementById("profile-name").value.trim() || DEFAULT_PROFILE.name;
+      AppState.profile.goal = document.getElementById("profile-goal").value.trim() || DEFAULT_PROFILE.goal;
+      AppState.profile.experience = document.getElementById("profile-experience").value.trim() || DEFAULT_PROFILE.experience;
+      AppState.profile.daysPerWeek = Number(document.getElementById("profile-days").value || DEFAULT_PROFILE.daysPerWeek);
+      AppState.profile.dailyMinutes = Number(document.getElementById("profile-minutes").value || DEFAULT_PROFILE.dailyMinutes);
+      AppState.profile.focusAreas = document.getElementById("profile-focus").value.trim() || DEFAULT_PROFILE.focusAreas;
+      AppState.profile.equipmentText = document.getElementById("profile-equipment").value.trim() || DEFAULT_PROFILE.equipmentText;
+      AppState.api.endpoint = document.getElementById("api-endpoint").value.trim() || DEFAULT_API.endpoint;
+      AppState.api.key = document.getElementById("api-key").value.trim() || DEFAULT_API.key;
+      AppState.api.model = document.getElementById("api-model").value.trim() || DEFAULT_API.model;
+      persistState();
+      notify("AI 档案已保存");
+    }
+
+    function addCustomExercise() {
+      const name = prompt("请输入自定义动作名称，例如：绳索面拉");
+      if (!name) return;
+      const muscleGroup = prompt("请输入训练部位，例如：肩部", "肩部");
+      if (!muscleGroup) return;
+      AppState.exercises.push({
+        name,
+        muscleGroup,
+        targetMuscles: [muscleGroup],
+        equipment: "自定义器材 / 动作",
+        recommendedWeight: "自重",
+        defaultSets: 3,
+        defaultReps: "10-12",
+        bvid: "",
+        description: ["这是你新增的自定义动作，建议先从轻重量开始，确保轨迹稳定。"],
+        tips: ["优先保证动作标准，再逐步提高重量和次数。"]
+      });
+      persistState();
+      renderExercises();
+      notify("自定义动作已加入动作库");
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(AppState, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `fit-ai-data-${localDateValue()}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function handleRecordSubmit(event) {
+      event.preventDefault();
+      const exerciseName = document.getElementById("record-exercise-name").value.trim();
+      if (!exerciseName) {
+        notify("请先填写动作名称");
+        return;
+      }
+      const date = document.getElementById("record-date").value || localDateValue();
+      AppState.records.push({
+        id: Date.now(),
+        date,
+        weekKey: currentWeekKey(),
+        dayOfWeek: new Date(date).getDay(),
+        exerciseName,
+        weight: Number(document.getElementById("record-weight").value || 0),
+        sets: Number(document.getElementById("record-sets").value || 0),
+        reps: document.getElementById("record-reps").value.trim() || "10",
+        notes: document.getElementById("record-notes").value.trim()
+      });
+      persistState();
+      closeModal("record-modal");
+      renderDashboard();
+      renderTrainingPage();
+      renderHistory();
+      notify("训练记录已保存");
+    }
+
+    function bindEvents() {
+      document.querySelectorAll(".nav-item").forEach((item) => item.addEventListener("click", () => switchPage(item.dataset.page)));
+      document.querySelectorAll(".mobile-nav-btn").forEach((item) => item.addEventListener("click", () => switchPage(item.dataset.page)));
+      document.querySelectorAll(".chart-filter").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".chart-filter").forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+          renderChart(Number(button.dataset.period));
+        });
+      });
+      document.getElementById("refresh-ai-btn").addEventListener("click", refreshAIControl);
+      document.getElementById("finish-workout-btn").addEventListener("click", finishWorkoutAndSummarize);
+      document.getElementById("generate-daily-ai-btn").addEventListener("click", runDailyAdjustment);
+      document.getElementById("regenerate-plan-btn").addEventListener("click", regeneratePlanWithAI);
+      document.getElementById("send-chat-btn").addEventListener("click", sendChatMessage);
+      document.getElementById("chat-input").addEventListener("keypress", (event) => { if (event.key === "Enter") sendChatMessage(); });
+      document.querySelectorAll(".quick-question-btn").forEach((button) => button.addEventListener("click", () => {
+        document.getElementById("chat-input").value = button.dataset.question;
+        sendChatMessage();
+      }));
+      document.getElementById("record-form").addEventListener("submit", handleRecordSubmit);
+      document.getElementById("add-custom-exercise-btn").addEventListener("click", addCustomExercise);
+      document.getElementById("exercise-search").addEventListener("input", renderExercises);
+      document.getElementById("save-profile-btn").addEventListener("click", saveProfile);
+      document.getElementById("generate-diet-btn").addEventListener("click", generateDietAdvice);
+      document.getElementById("export-data-btn").addEventListener("click", exportData);
+      document.getElementById("plan-chat-jump-btn").addEventListener("click", () => {
+        switchPage("ai-chat");
+        document.getElementById("chat-input").value = "帮我重排本周训练计划";
+      });
+      document.querySelectorAll(".modal-overlay").forEach((overlay) => {
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) overlay.classList.remove("active");
+        });
+      });
+    }
+
+    function init() {
+      document.getElementById("current-date-display").textContent = formatDate();
+      fillReadinessSelects();
+      bindEvents();
+      renderProfile();
+      renderDashboard();
+      renderTrainingPage();
+      renderPlanPage();
+      renderHistory();
+      renderExercises();
+      switchPage("dashboard");
+    }
+
+    init();
+    window.switchPage = switchPage;
+    window.openExerciseModal = openExerciseModal;
+    window.openRecordModal = openRecordModal;
+    window.closeModal = closeModal;
+    window.renderPlanPage = renderPlanPage;
+    window.requestDayReplacement = requestDayReplacement;
+  </script>
+</body>
+</html>
